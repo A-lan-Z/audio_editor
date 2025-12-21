@@ -15,6 +15,13 @@ def test_word_spans_to_tokens_splits_punctuation() -> None:
     assert [t.type for t in tokens] == ["word", "punctuation", "word", "punctuation"]
 
 
+def test_word_spans_to_tokens_splits_numbers_without_overlap() -> None:
+    spans = [WordSpan(text="1,000", start=0.0, end=1.0)]
+    tokens = word_spans_to_tokens(spans)
+    assert [t.text for t in tokens] == ["1", ",", "000"]
+    assert tokens[2].start >= tokens[0].end
+
+
 def test_word_spans_to_tokens_clamps_overlaps() -> None:
     spans = [
         WordSpan(text="a", start=0.0, end=1.0),

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from backend.models.transcript import Token
 
-_PART_RE = re.compile(r"[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)*|[^\\w\\s]+")
+_PART_RE = re.compile(r"[A-Za-z0-9]+(?:['-][A-Za-z0-9]+)*|[^\w\s]+")
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,15 +44,45 @@ def word_spans_to_tokens(spans: list[WordSpan]) -> list[Token]:
         if not parts:
             continue
 
-        for part in parts:
-            if any(ch.isalnum() for ch in part):
-                tokens.append(Token(text=part, start=start, end=end, type="word"))
-                previous_end = end
-            else:
-                anchor = previous_end if tokens else start
+        word_parts = [part for part in parts if any(ch.isalnum() for ch in part)]
+        if not word_parts:
+            anchor = previous_end if tokens else start
+            for part in parts:
                 tokens.append(
                     Token(text=part, start=anchor, end=anchor, type="punctuation")
                 )
+            continue
+
+        span_duration = end - start
+        total_weight = sum(len(part) for part in word_parts)
+        cursor = start
+        remaining_words = len(word_parts)
+
+        for part in parts:
+            if not any(ch.isalnum() for ch in part):
+                anchor = previous_end if tokens else cursor
+                tokens.append(
+                    Token(text=part, start=anchor, end=anchor, type="punctuation")
+                )
+                continue
+
+            remaining_words -= 1
+            if remaining_words <= 0:
+                part_start = cursor
+                part_end = end
+            elif span_duration <= 0 or total_weight <= 0:
+                part_start = cursor
+                part_end = cursor
+            else:
+                weight = len(part)
+                part_duration = span_duration * (weight / float(total_weight))
+                part_start = cursor
+                part_end = min(end, cursor + part_duration)
+                total_weight -= weight
+
+            tokens.append(Token(text=part, start=part_start, end=part_end, type="word"))
+            cursor = part_end
+            previous_end = part_end
 
     return _validate_monotonic(tokens)
 
