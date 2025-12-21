@@ -705,11 +705,11 @@ Build React component for audio file upload with drag-and-drop.
 ---
 
 #### T209: Display Upload Progress and Errors
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Low
 - **Dependencies:** T206
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-9, NFR-10
 
 **Description:**
@@ -727,7 +727,7 @@ Show upload progress bar and handle errors gracefully in UI.
 - Use XMLHttpRequest or fetch with progress events
 - Style errors in red, success in green
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

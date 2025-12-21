@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import {
   createProject,
-  uploadAudio,
+  uploadAudioWithProgress,
   type UploadResponse,
 } from '@/services/projects'
 
@@ -29,6 +29,8 @@ export function AudioUpload(): JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [progress, setProgress] = useState<number>(0)
+  const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<UploadResponse | null>(null)
 
@@ -42,6 +44,8 @@ export function AudioUpload(): JSX.Element {
 
     setError(null)
     setResult(null)
+    setProgress(0)
+    setStatus('Uploading…')
     setIsUploading(true)
     try {
       let id = projectId
@@ -50,10 +54,17 @@ export function AudioUpload(): JSX.Element {
         id = created.project_id
         setProjectId(id)
       }
-      const response = await uploadAudio(id, selectedFile)
+      const response = await uploadAudioWithProgress(id, selectedFile, (p) => {
+        setProgress(p.percent)
+        if (p.percent >= 100) {
+          setStatus('Processing…')
+        }
+      })
       setResult(response)
+      setStatus('Complete')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
+      setStatus(null)
     } finally {
       setIsUploading(false)
     }
@@ -62,6 +73,8 @@ export function AudioUpload(): JSX.Element {
   function setFile(file: File | null): void {
     setError(null)
     setResult(null)
+    setProgress(0)
+    setStatus(null)
     if (!file) {
       setSelectedFile(null)
       return
@@ -130,6 +143,33 @@ export function AudioUpload(): JSX.Element {
           Clear
         </button>
       </div>
+
+      {isUploading && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 12, opacity: 0.8 }}>{status}</div>
+          <div
+            style={{
+              marginTop: 8,
+              height: 10,
+              borderRadius: 999,
+              background: '#e6e6e6',
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                width: `${progress}%`,
+                height: '100%',
+                background: '#646cff',
+                transition: 'width 120ms linear',
+              }}
+            />
+          </div>
+          <div style={{ marginTop: 6, fontSize: 12, opacity: 0.75 }}>
+            {progress}%
+          </div>
+        </div>
+      )}
 
       {error && (
         <div style={{ marginTop: 16, color: '#b00020', fontWeight: 600 }}>

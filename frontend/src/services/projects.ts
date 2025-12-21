@@ -58,3 +58,61 @@ export async function uploadAudio(
 
   return data as UploadResponse
 }
+
+export type UploadProgress = {
+  loaded: number
+  total: number
+  percent: number
+}
+
+export function uploadAudioWithProgress(
+  projectId: string,
+  file: File,
+  onProgress: (progress: UploadProgress) => void
+): Promise<UploadResponse> {
+  return new Promise((resolve, reject) => {
+    const form = new FormData()
+    form.append('file', file, file.name)
+
+    const request = new XMLHttpRequest()
+    request.open('POST', `/api/projects/${projectId}/upload`)
+
+    request.upload.addEventListener('progress', (event) => {
+      const total = event.lengthComputable ? event.total : file.size
+      const percent = total > 0 ? Math.round((event.loaded / total) * 100) : 0
+      onProgress({ loaded: event.loaded, total, percent })
+    })
+
+    request.addEventListener('error', () => {
+      reject(new Error('Upload failed'))
+    })
+
+    request.addEventListener('load', () => {
+      let payload: unknown = null
+      try {
+        payload = JSON.parse(request.responseText)
+      } catch {
+        // ignore
+      }
+
+      if (request.status >= 200 && request.status < 300) {
+        resolve(payload as UploadResponse)
+        return
+      }
+
+      if (
+        payload &&
+        typeof payload === 'object' &&
+        'detail' in payload &&
+        typeof (payload as { detail: unknown }).detail === 'string'
+      ) {
+        reject(new Error((payload as { detail: string }).detail))
+        return
+      }
+
+      reject(new Error(`Upload failed (${request.status})`))
+    })
+
+    request.send(form)
+  })
+}
