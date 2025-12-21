@@ -216,11 +216,11 @@ Configure black, ruff, prettier, and eslint with project standards.
 ---
 
 #### T006: Create Makefile with Common Commands
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** T002, T003, T005
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** AGENTS.md conventions
 
 **Description:**
@@ -239,7 +239,7 @@ Create Makefile to standardize common development tasks.
 - Use `&&` for sequential commands, `&` for parallel
 - Add help target with descriptions: `make help`
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
