@@ -1122,30 +1122,30 @@ Profile transcription and optimize to meet performance targets.
 ### Phase 4: Text Editor & Token Mapping
 
 #### T401: Design Token-to-Audio Mapping Data Structure
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** Medium
 - **Dependencies:** T306
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-10, FR-11
 
 **Description:**
 Design data structure to maintain text-to-audio alignment.
 
 **Acceptance Criteria:**
-- [ ] Design documented in docs/architecture.md
-- [ ] Structure maps: character positions in text ↔ token IDs ↔ audio timestamps
-- [ ] Handles insertions, deletions, and replacements
-- [ ] Preserves original token metadata even when edited
-- [ ] Efficient lookups (O(log n) for position-to-token)
-- [ ] Design reviewed and approved
+- [x] Design documented in docs/architecture.md
+- [x] Structure maps: character positions in text ↔ token IDs ↔ audio timestamps
+- [x] Handles insertions, deletions, and replacements
+- [x] Preserves original token metadata even when edited
+- [x] Efficient lookups (O(log n) for position-to-token)
+- [x] Design reviewed and approved
 
 **Notes:**
 - Consider using offset-based indexing
 - Track original vs. current text positions
 - May need auxiliary index structures (interval tree?)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

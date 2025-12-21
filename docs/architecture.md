@@ -56,3 +56,57 @@ Notes:
 - Real speech accuracy/timing quality must be validated with real speech audio (not committed to repo).
 - Larger models (`base`, `small`) are expected to be slower but more accurate; we will tune defaults in T313.
 
+## Transcript Editor & Mapping (Phase 4)
+
+### Editor goals
+
+- Render the transcript as a sequence of word “bubbles” (chip-style UI).
+- Treat **words as the smallest editable unit**:
+  - Backspace/delete removes a whole word (never half a word).
+  - Typing creates an in-progress word; when committed (space / cursor move) it becomes a bubble.
+- Maintain alignment back to the original ASR token IDs and timestamps for later audio editing.
+
+### Data model
+
+We represent the current editor document as an ordered list of nodes:
+
+- `TokenNode` (original ASR word token)
+  - `tokenId`: UUID (from `Transcript.tokens[].id`)
+  - `text`: displayed text for the word
+  - `start`, `end`: timestamps from the ASR token
+  - `status`: `original | deleted | replaced`
+- `InsertNode` (user-inserted word)
+  - `id`: local UUID/string
+  - `text`: inserted word text
+  - `status`: `inserted`
+  - No timestamps / no ASR token ID yet
+
+Punctuation:
+- We attach punctuation to the previous `TokenNode` for display, but treat word tokens as the primary selectable/editable units (selection/mapping returns word tokens).
+
+### Mapping index (cursor/selection)
+
+Even though the UI is word-based, the backend `EditOperation.position` is defined as a **character offset** in the current text. To support cursor/selection mapping efficiently:
+
+- Compute `visibleText` by joining nodes with spaces using the same spacing rules as rendering.
+- Build an index of spans:
+  - For each word bubble, compute `[charStart, charEnd)` within `visibleText`
+  - Store `tokenId` (for `TokenNode`) or `null` (for `InsertNode`)
+- `position -> token` uses binary search over the spans (O(log n)).
+
+Selections:
+- Selection range is tracked in terms of word indices.
+- Selected tokens are derived from the selected word indices (word tokens only).
+
+### Edit operations
+
+Operations are derived from UI interactions:
+
+- `delete`: marks selected `TokenNode` as `deleted` (or deletes the previous word bubble if no explicit selection).
+- `insert`: inserts an `InsertNode` at the current cursor index when a typed word is committed.
+- `replace`: marks selected tokens as `replaced` and inserts one or more `InsertNode` words in their place.
+
+Undo/redo:
+- Frontend keeps undo/redo stacks and applies inverse transformations to the node list.
+- Backend stores an append-only operation log for project state reconstruction.
+
