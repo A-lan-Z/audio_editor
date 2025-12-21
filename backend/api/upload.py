@@ -8,6 +8,7 @@ from uuid import UUID
 from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel, ConfigDict
 
+from backend.utils.audio_processing import ensure_wav_pcm16, validate_audio_decodable
 from backend.utils.errors import ProjectNotFound, ValidationError
 from backend.utils.storage import (
     StorageError,
@@ -71,6 +72,16 @@ def upload_audio(project_id: UUID, file: UploadFile = File(...)) -> UploadRespon
         tmp_path.replace(dest_path)
     except OSError as exc:
         raise ValidationError("Failed to save uploaded file") from exc
+
+    try:
+        validate_audio_decodable(dest_path)
+        converted_path = ensure_wav_pcm16(dest_path)
+        if converted_path != dest_path:
+            dest_path.unlink(missing_ok=True)
+            dest_path = converted_path
+    except Exception:  # noqa: BLE001
+        dest_path.unlink(missing_ok=True)
+        raise
 
     return UploadResponse(
         project_id=project.id,

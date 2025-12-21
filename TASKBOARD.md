@@ -572,11 +572,11 @@ Create endpoint to receive audio file uploads.
 ---
 
 #### T202: Add Audio Format Validation and Conversion
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Medium
 - **Dependencies:** T201
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-3
 
 **Description:**
@@ -594,7 +594,7 @@ Validate audio format and convert to standard format if needed.
 - Use pydub for format detection and conversion
 - Handle corrupt files gracefully
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
