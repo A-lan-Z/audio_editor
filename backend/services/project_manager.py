@@ -1,19 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from threading import Lock
 from typing import Any
 from uuid import UUID
 
 from backend.models.project import Project
-
-
-@dataclass(frozen=True, slots=True)
-class ProjectNotFound(Exception):
-    project_id: UUID
-
-    def __str__(self) -> str:
-        return f"Project not found: {self.project_id}"
+from backend.utils.errors import ProjectNotFound
 
 
 class ProjectManager:

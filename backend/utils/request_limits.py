@@ -40,9 +40,11 @@ class MaxBodySizeMiddleware:
                 response = JSONResponse(
                     status_code=413,
                     content={
+                        "error": "Request Too Large",
                         "detail": (
                             f"Request too large ({length} bytes). Max {limit} bytes."
                         ),
+                        "code": "REQUEST_TOO_LARGE",
                     },
                 )
                 await response(scope, receive, send)

@@ -4,12 +4,13 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.api.deps import get_project_manager
 from backend.models.project import Project
 from backend.services.project_manager import ProjectManager
+from backend.utils.errors import ProjectNotFound
 from backend.utils.storage import (
     StorageError,
     load_project_metadata,
@@ -53,13 +54,7 @@ def create_project(
     project_manager: ProjectManager = Depends(get_project_manager),
 ) -> ProjectMetadataResponse:
     project = project_manager.create_project(metadata=request.metadata)
-    try:
-        save_project_metadata(project)
-    except StorageError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(exc),
-        ) from exc
+    save_project_metadata(project)
     return _to_project_metadata_response(project)
 
 
@@ -68,14 +63,9 @@ def get_project(project_id: UUID) -> ProjectMetadataResponse:
     try:
         project = load_project_metadata(project_id)
     except StorageError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Project not found"
-        ) from exc
+        raise ProjectNotFound(project_id) from exc
     if project.id != project_id:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Invalid project metadata",
-        )
+        raise RuntimeError("Invalid project metadata")
     return _to_project_metadata_response(project)
 
 
