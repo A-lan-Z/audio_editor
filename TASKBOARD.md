@@ -1425,32 +1425,32 @@ Ensure token-to-audio mapping remains correct after edits.
 ---
 
 #### T412: Write Tests for Edit Operations
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** High
 - **Dependencies:** T407, T411
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Testing standards
 
 **Description:**
 Comprehensive tests for editing logic.
 
 **Acceptance Criteria:**
-- [ ] tests/backend/test_edit_operations.py created
-- [ ] Test: delete single word
-- [ ] Test: delete multiple words
-- [ ] Test: insert text at position
-- [ ] Test: replace word
-- [ ] Test: undo/redo operations
-- [ ] Test: complex sequences
-- [ ] Test: token mapping integrity
-- [ ] All tests passing
+- [x] tests/backend/test_edit_operations.py created
+- [x] Test: delete single word
+- [x] Test: delete multiple words
+- [x] Test: insert text at position
+- [x] Test: replace word
+- [x] Test: undo/redo operations
+- [x] Test: complex sequences
+- [x] Test: token mapping integrity
+- [x] All tests passing
 
 **Notes:**
 - Use fixtures for sample transcripts
 - Test edge cases: delete all, insert at start/end
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
