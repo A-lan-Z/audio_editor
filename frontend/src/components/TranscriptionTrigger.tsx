@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { getTranscript, startTranscription } from '@/services/projects'
+import {
+  getTranscript,
+  getTranscriptionStatus,
+  startTranscription,
+  type TranscriptionStatusResponse,
+} from '@/services/projects'
 
 type Props = {
   projectId: string | null
@@ -17,40 +22,62 @@ export function TranscriptionTrigger({
   const [isWaiting, setIsWaiting] = useState(false)
   const [taskId, setTaskId] = useState<string | null>(null)
   const [transcriptReady, setTranscriptReady] = useState(false)
+  const [status, setStatus] = useState<
+    TranscriptionStatusResponse['status'] | null
+  >(null)
+  const [progress, setProgress] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!projectId || !taskId) return
 
     let canceled = false
+    let intervalId: number | null = null
     setTranscriptReady(false)
     setIsWaiting(true)
+    setStatus('queued')
+    setProgress(null)
 
     async function poll(): Promise<void> {
       try {
-        await getTranscript(projectId)
+        const statusResponse = await getTranscriptionStatus(projectId)
         if (canceled) return
-        setTranscriptReady(true)
-        setIsWaiting(false)
+        setStatus(statusResponse.status)
+        setProgress(
+          typeof statusResponse.progress === 'number'
+            ? statusResponse.progress
+            : null
+        )
+        if (statusResponse.status === 'failed') {
+          setError(statusResponse.error ?? 'Transcription failed')
+          setIsWaiting(false)
+          if (intervalId !== null) window.clearInterval(intervalId)
+          return
+        }
+        if (statusResponse.status === 'completed') {
+          await getTranscript(projectId)
+          if (canceled) return
+          setTranscriptReady(true)
+          setIsWaiting(false)
+          if (intervalId !== null) window.clearInterval(intervalId)
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error'
         if (canceled) return
-        if (message.toLowerCase().includes('transcript not found')) {
-          return
-        }
         setError(message)
         setIsWaiting(false)
+        if (intervalId !== null) window.clearInterval(intervalId)
       }
     }
 
-    const id = window.setInterval(() => {
+    intervalId = window.setInterval(() => {
       void poll()
     }, 2000)
     void poll()
 
     return () => {
       canceled = true
-      window.clearInterval(id)
+      if (intervalId !== null) window.clearInterval(intervalId)
     }
   }, [projectId, taskId])
 
@@ -93,7 +120,12 @@ export function TranscriptionTrigger({
       )}
       {isWaiting && (
         <div style={{ marginTop: 12, fontSize: 12, opacity: 0.8 }}>
-          Processing…
+          {status === 'queued' ? 'Queued…' : 'Processing…'}
+        </div>
+      )}
+      {typeof progress === 'number' && (
+        <div style={{ marginTop: 8, fontSize: 12, opacity: 0.8 }}>
+          Progress: {Math.round(progress * 100)}%
         </div>
       )}
       {transcriptReady && (

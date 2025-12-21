@@ -1036,30 +1036,30 @@ Build UI to trigger transcription after upload.
 ---
 
 #### T311: Display Transcription Status
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T308, T310
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-9
 
 **Description:**
 Show real-time transcription progress in UI.
 
 **Acceptance Criteria:**
-- [ ] Polls GET /api/projects/{id}/transcribe/status every 2 seconds
-- [ ] Shows status: "Queued", "Processing...", "Completed", "Failed"
-- [ ] Optional: shows progress bar or percentage
-- [ ] Stops polling when completed or failed
-- [ ] Fetches transcript when completed
-- [ ] Shows error message if failed
+- [x] Polls GET /api/projects/{id}/transcribe/status every 2 seconds
+- [x] Shows status: "Queued", "Processing...", "Completed", "Failed"
+- [x] Optional: shows progress bar or percentage
+- [x] Stops polling when completed or failed
+- [x] Fetches transcript when completed
+- [x] Shows error message if failed
 
 **Notes:**
 - Use setInterval for polling
 - Clear interval on unmount to prevent leaks
 - Consider adding estimated time remaining
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

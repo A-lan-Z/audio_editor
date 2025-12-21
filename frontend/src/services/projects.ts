@@ -122,6 +122,13 @@ export type StartTranscriptionResponse = {
   status: string
 }
 
+export type TranscriptionStatusResponse = {
+  task_id: string | null
+  status: 'queued' | 'processing' | 'completed' | 'failed'
+  progress?: number | null
+  error?: string | null
+}
+
 export async function startTranscription(
   projectId: string
 ): Promise<StartTranscriptionResponse> {
@@ -144,6 +151,30 @@ export async function startTranscription(
   }
 
   return data as StartTranscriptionResponse
+}
+
+export async function getTranscriptionStatus(
+  projectId: string
+): Promise<TranscriptionStatusResponse> {
+  const response = await fetch(`/api/projects/${projectId}/transcribe/status`, {
+    method: 'GET',
+  })
+
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Failed to fetch transcription status (${response.status})`)
+  }
+
+  return data as TranscriptionStatusResponse
 }
 
 export type TranscriptToken = {
