@@ -1008,30 +1008,30 @@ Persist transcript to project directory in JSON format.
 ---
 
 #### T310: Create Frontend Transcription Trigger Component
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T003, T307
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-9, NFR-9
 
 **Description:**
 Build UI to trigger transcription after upload.
 
 **Acceptance Criteria:**
-- [ ] frontend/src/components/TranscriptionTrigger.tsx created
-- [ ] "Generate Transcript" button
-- [ ] Button disabled if no audio uploaded
-- [ ] Triggers POST /api/projects/{id}/transcribe
-- [ ] Shows loading state while processing
-- [ ] Displays success when transcript ready
-- [ ] Handles errors (file not found, etc.)
+- [x] frontend/src/components/TranscriptionTrigger.tsx created
+- [x] "Generate Transcript" button
+- [x] Button disabled if no audio uploaded
+- [x] Triggers POST /api/projects/{id}/transcribe
+- [x] Shows loading state while processing
+- [x] Displays success when transcript ready
+- [x] Handles errors (file not found, etc.)
 
 **Notes:**
 - Integrate with upload workflow (auto-advance to transcription)
 - Clear visual feedback (spinner, progress message)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

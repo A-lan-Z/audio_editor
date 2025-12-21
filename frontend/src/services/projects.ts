@@ -116,3 +116,69 @@ export function uploadAudioWithProgress(
     request.send(form)
   })
 }
+
+export type StartTranscriptionResponse = {
+  task_id: string
+  status: string
+}
+
+export async function startTranscription(
+  projectId: string
+): Promise<StartTranscriptionResponse> {
+  const response = await fetch(`/api/projects/${projectId}/transcribe`, {
+    method: 'POST',
+  })
+
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Transcription failed (${response.status})`)
+  }
+
+  return data as StartTranscriptionResponse
+}
+
+export type TranscriptToken = {
+  id: string
+  text: string
+  start: number
+  end: number
+  type: 'word' | 'punctuation' | 'pause'
+}
+
+export type Transcript = {
+  tokens: TranscriptToken[]
+  language: string
+  duration: number
+  created_at: string
+}
+
+export async function getTranscript(projectId: string): Promise<Transcript> {
+  const response = await fetch(`/api/projects/${projectId}/transcript`, {
+    method: 'GET',
+  })
+
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Failed to fetch transcript (${response.status})`)
+  }
+
+  return data as Transcript
+}

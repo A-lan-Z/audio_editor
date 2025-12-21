@@ -8,6 +8,11 @@ import {
 
 const allowedExtensions = ['.wav', '.mp3']
 
+type Props = {
+  onProjectIdChange?: (projectId: string | null) => void
+  onAudioReadyChange?: (ready: boolean) => void
+}
+
 function formatBytes(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB']
   let value = bytes
@@ -24,7 +29,10 @@ function isAllowedFile(file: File): boolean {
   return allowedExtensions.some((ext) => lower.endsWith(ext))
 }
 
-export function AudioUpload(): JSX.Element {
+export function AudioUpload({
+  onProjectIdChange,
+  onAudioReadyChange,
+}: Props): JSX.Element {
   const [projectId, setProjectId] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -46,6 +54,7 @@ export function AudioUpload(): JSX.Element {
     setResult(null)
     setProgress(0)
     setStatus('Uploading…')
+    onAudioReadyChange?.(false)
     setIsUploading(true)
     try {
       let id = projectId
@@ -53,6 +62,7 @@ export function AudioUpload(): JSX.Element {
         const created = await createProject()
         id = created.project_id
         setProjectId(id)
+        onProjectIdChange?.(id)
       }
       const response = await uploadAudioWithProgress(id, selectedFile, (p) => {
         setProgress(p.percent)
@@ -62,9 +72,11 @@ export function AudioUpload(): JSX.Element {
       })
       setResult(response)
       setStatus('Complete')
+      onAudioReadyChange?.(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
       setStatus(null)
+      onAudioReadyChange?.(false)
     } finally {
       setIsUploading(false)
     }
@@ -75,6 +87,7 @@ export function AudioUpload(): JSX.Element {
     setResult(null)
     setProgress(0)
     setStatus(null)
+    onAudioReadyChange?.(false)
     if (!file) {
       setSelectedFile(null)
       return
@@ -137,6 +150,7 @@ export function AudioUpload(): JSX.Element {
             setSelectedFile(null)
             setError(null)
             setResult(null)
+            onAudioReadyChange?.(false)
           }}
           disabled={isUploading}
         >
