@@ -298,11 +298,11 @@ Create this TASKBOARD.md file with all tasks from WORKPLAN.md.
 ### Phase 1: Backend Core Infrastructure
 
 #### T101: Create FastAPI Application Skeleton
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Low
 - **Dependencies:** T002, T006
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-4
 
 **Description:**
@@ -319,7 +319,7 @@ Create main FastAPI app with CORS, basic routing, and health check endpoint.
 - Use port 8000 for backend (configurable via env var)
 - Enable CORS for localhost:5173 (Vite default)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
