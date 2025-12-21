@@ -14,12 +14,14 @@ from backend.utils.audio_processing import (
     WARN_DURATION_SECONDS,
     ensure_wav_pcm16,
     get_duration_seconds,
+    normalize_to_mono_wav,
     validate_audio_decodable,
 )
 from backend.utils.errors import ProjectNotFound, ValidationError
 from backend.utils.storage import (
     StorageError,
     load_project_metadata,
+    project_original_wav_path,
     project_uploads_dir,
 )
 
@@ -99,6 +101,11 @@ def upload_audio(project_id: UUID, file: UploadFile = File(...)) -> UploadRespon
             raise ValidationError(
                 f"This file is too long ({minutes:.1f} min). Max 10 minutes."
             )
+
+        normalize_to_mono_wav(
+            src_path=dest_path,
+            dest_path=project_original_wav_path(project_id),
+        )
     except Exception:  # noqa: BLE001
         dest_path.unlink(missing_ok=True)
         raise

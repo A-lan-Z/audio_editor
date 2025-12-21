@@ -625,11 +625,11 @@ Check audio duration and reject files exceeding limit.
 ---
 
 #### T204: Normalize Audio to Mono and Standard Sample Rate
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Medium
 - **Dependencies:** T202
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-3
 
 **Description:**
@@ -646,7 +646,7 @@ Convert audio to mono and consistent sample rate for model compatibility.
 - Use librosa.resample and librosa.to_mono
 - Document chosen sample rate in comments
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

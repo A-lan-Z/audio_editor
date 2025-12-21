@@ -65,6 +65,11 @@ def project_uploads_dir(project_id: UUID) -> Path:
     return project_dir / "uploads"
 
 
+def project_original_wav_path(project_id: UUID) -> Path:
+    project_dir = _ensure_project_dir(project_id)
+    return project_dir / "original.wav"
+
+
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
