@@ -58,11 +58,11 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 ### Phase 0: Project Scaffolding & Setup
 
 #### T001: Create Directory Structure
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** None
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-4
 
 **Description:**
@@ -103,7 +103,7 @@ audio_editor/
 - Use `mkdir -p` to create nested directories
 - Add README.md stubs in major directories explaining their purpose
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
