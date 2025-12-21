@@ -1064,30 +1064,30 @@ Show real-time transcription progress in UI.
 ---
 
 #### T312: Write Tests with Sample Audio
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T303, T307
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Testing standards
 
 **Description:**
 Create comprehensive tests for transcription pipeline.
 
 **Acceptance Criteria:**
-- [ ] tests/backend/test_transcription.py created
-- [ ] Sample audio files created (2-5 min synthetic speech)
-- [ ] Test: transcribe sample, verify tokens returned
-- [ ] Test: timestamp accuracy (known words at known times)
-- [ ] Test: handles empty audio
-- [ ] Test: handles corrupt audio file
-- [ ] All tests passing
+- [x] tests/backend/test_transcription.py created
+- [x] Sample audio files created (2-5 min synthetic speech)
+- [x] Test: transcribe sample, verify tokens returned
+- [x] Test: timestamp accuracy (known words at known times)
+- [x] Test: handles empty audio
+- [x] Test: handles corrupt audio file
+- [x] All tests passing
 
 **Notes:**
 - Use librosa or pydub to generate synthetic audio
 - Mock ASR model for unit tests, use real model for integration tests
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
