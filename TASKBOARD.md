@@ -1150,31 +1150,31 @@ Design data structure to maintain text-to-audio alignment.
 ---
 
 #### T402: Create TranscriptEditor React Component
-- **Status:** Not Started
-- **Phase:** 4
-- **Complexity:** High
-- **Dependencies:** T003, T306
-- **Agent:** (unassigned)
-- **Requirements:** FR-10, FR-13
+- **Status:** Done
+ - **Phase:** 4
+ - **Complexity:** High
+ - **Dependencies:** T003, T306
+ - **Agent:** GPT-5.2 (Codex CLI)
+ - **Requirements:** FR-10, FR-13
 
 **Description:**
 Build main transcript editor component.
 
 **Acceptance Criteria:**
-- [ ] frontend/src/components/TranscriptEditor.tsx created
-- [ ] Renders transcript as editable text (contentEditable or textarea)
-- [ ] Supports text selection, cursor movement
-- [ ] Supports keyboard shortcuts (Ctrl+Z for undo, etc.)
-- [ ] Maintains internal state of transcript tokens
-- [ ] Emits edit events to parent component
-- [ ] Basic styling (readable font, padding)
+- [x] frontend/src/components/TranscriptEditor.tsx created
+- [x] Renders transcript as editable text (word-bubble editor)
+- [x] Supports text selection, cursor movement
+- [x] Supports keyboard shortcuts (Ctrl+Z for undo, etc.)
+- [x] Maintains internal state of transcript tokens
+- [x] Emits edit events to parent component
+- [x] Basic styling (readable font, padding)
 
 **Notes:**
 - Use contentEditable div for rich control, or controlled textarea
 - Consider using Slate.js or similar editor library for advanced features
 - Keep simple for MVP, can enhance later
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

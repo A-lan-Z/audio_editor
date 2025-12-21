@@ -5,18 +5,21 @@ import {
   getTranscriptionStatus,
   startTranscription,
   type TranscriptionStatusResponse,
+  type Transcript,
 } from '@/services/projects'
 
 type Props = {
   projectId: string | null
   hasAudio: boolean
   onTaskStarted?: (taskId: string) => void
+  onTranscriptLoaded?: (transcript: Transcript) => void
 }
 
 export function TranscriptionTrigger({
   projectId,
   hasAudio,
   onTaskStarted,
+  onTranscriptLoaded,
 }: Props): JSX.Element {
   const [isStarting, setIsStarting] = useState(false)
   const [isWaiting, setIsWaiting] = useState(false)
@@ -55,8 +58,9 @@ export function TranscriptionTrigger({
           return
         }
         if (statusResponse.status === 'completed') {
-          await getTranscript(projectId)
+          const transcript = await getTranscript(projectId)
           if (canceled) return
+          onTranscriptLoaded?.(transcript)
           setTranscriptReady(true)
           setIsWaiting(false)
           if (intervalId !== null) window.clearInterval(intervalId)
@@ -79,7 +83,7 @@ export function TranscriptionTrigger({
       canceled = true
       if (intervalId !== null) window.clearInterval(intervalId)
     }
-  }, [projectId, taskId])
+  }, [projectId, taskId, onTranscriptLoaded])
 
   async function onStart(): Promise<void> {
     if (!projectId) return

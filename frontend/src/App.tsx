@@ -3,10 +3,13 @@ import { useState } from 'react'
 import './App.css'
 import { AudioUpload } from '@/components/AudioUpload'
 import { TranscriptionTrigger } from '@/components/TranscriptionTrigger'
+import { TranscriptEditor } from '@/components/TranscriptEditor'
+import type { Transcript } from '@/services/projects'
 
 function App() {
   const [projectId, setProjectId] = useState<string | null>(null)
   const [hasAudio, setHasAudio] = useState(false)
+  const [transcript, setTranscript] = useState<Transcript | null>(null)
 
   return (
     <>
@@ -18,9 +21,19 @@ function App() {
       <h1>TextAudio Edit</h1>
       <AudioUpload
         onProjectIdChange={setProjectId}
-        onAudioReadyChange={setHasAudio}
+        onAudioReadyChange={(ready) => {
+          setHasAudio(ready)
+          if (!ready) setTranscript(null)
+        }}
       />
-      <TranscriptionTrigger projectId={projectId} hasAudio={hasAudio} />
+      <TranscriptionTrigger
+        projectId={projectId}
+        hasAudio={hasAudio}
+        onTranscriptLoaded={setTranscript}
+      />
+      {transcript && (
+        <TranscriptEditor key={transcript.created_at} transcript={transcript} />
+      )}
     </>
   )
 }
