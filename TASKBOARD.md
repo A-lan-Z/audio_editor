@@ -1288,28 +1288,28 @@ Track all text edits as structured operations.
 ---
 
 #### T407: Create EditOperation Data Model
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** Low
 - **Dependencies:** T306
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-13
 
 **Description:**
 Define data model for edit operations.
 
 **Acceptance Criteria:**
-- [ ] backend/models/edit_operation.py created
-- [ ] EditOperation model: id, type (insert/delete/replace), position, old_tokens (List[UUID]), new_text, timestamp
-- [ ] Validation: type is valid, position >= 0
-- [ ] Methods: to_json(), from_json(), apply(transcript) -> Transcript
-- [ ] Test serialization and application
+- [x] backend/models/edit_operation.py created
+- [x] EditOperation model: id, type (insert/delete/replace), position, old_tokens (List[UUID]), new_text, timestamp
+- [x] Validation: type is valid, position >= 0
+- [x] Methods: to_json(), from_json(), apply(transcript) -> Transcript
+- [x] Test serialization and application
 
 **Notes:**
 - position is character offset in current text
 - old_tokens references original token IDs
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

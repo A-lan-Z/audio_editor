@@ -1,24 +1,13 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, Literal
+from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from backend.models.edit_operation import EditOperation
 from backend.models.transcript import Transcript
-
-EditType = Literal["insert", "delete", "replace", "pause_adjust"]
-
-
-class EditOperation(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    type: EditType
-    position: int = Field(ge=0)
-    old_tokens: list[UUID] = Field(default_factory=list)
-    new_text: str = Field(default="")
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class Project(BaseModel):
