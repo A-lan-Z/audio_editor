@@ -1260,30 +1260,30 @@ Map text selection to range of tokens.
 ---
 
 #### T406: Implement Edit Tracking
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** High
 - **Dependencies:** T405
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-13
 
 **Description:**
 Track all text edits as structured operations.
 
 **Acceptance Criteria:**
-- [ ] Capture edits: insertion, deletion, replacement
-- [ ] Create EditOperation for each edit: {type, position, old_tokens, new_text, timestamp}
-- [ ] Maintain edit history (list of operations)
-- [ ] Handle complex edits (cut, paste, drag-and-drop)
-- [ ] Debounce rapid edits (e.g., typing) into single operation
-- [ ] Test various editing scenarios
+- [x] Capture edits: insertion, deletion, replacement
+- [x] Create EditOperation for each edit: {type, position, old_tokens, new_text, timestamp}
+- [x] Maintain edit history (list of operations)
+- [x] Handle complex edits (cut, paste, drag-and-drop)
+- [x] Debounce rapid edits (e.g., typing) into single operation
+- [x] Test various editing scenarios
 
 **Notes:**
 - Listen to input, beforeinput, or keydown events
 - Use MutationObserver for contentEditable changes
 - Store operations in React state
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

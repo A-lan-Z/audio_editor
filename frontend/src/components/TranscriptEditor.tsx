@@ -43,6 +43,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
+function normalizeInsertedText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim()
+}
+
 function tokensToWords(tokens: TranscriptToken[]): WordNode[] {
   const words: WordNode[] = []
   let lastWord: WordNode | null = null
@@ -127,6 +131,21 @@ function getTokensInSelection(
   return selected
 }
 
+function selectionToText(
+  words: WordNode[],
+  selection: SelectionRange | null
+): string {
+  if (!selection) return ''
+  const start = Math.min(selection.start, selection.end)
+  const end = Math.max(selection.start, selection.end)
+  return words
+    .slice(start, end + 1)
+    .map(
+      (w) => `${w.wordText}${w.punctuationTokens.map((t) => t.text).join('')}`
+    )
+    .join(' ')
+}
+
 export function TranscriptEditor({
   transcript,
   onOperationsChange,
@@ -157,6 +176,45 @@ export function TranscriptEditor({
   useEffect(() => {
     onOperationsChange?.(operations)
   }, [operations, onOperationsChange])
+
+  function appendOperation(next: EditOperation): void {
+    setOperations((prev) => {
+      const last = prev.at(-1)
+      if (!last) return [...prev, next]
+
+      const lastTime = Date.parse(last.timestamp)
+      const nextTime = Date.parse(next.timestamp)
+      const withinWindow =
+        Number.isFinite(lastTime) &&
+        Number.isFinite(nextTime) &&
+        nextTime - lastTime < 900
+
+      if (
+        withinWindow &&
+        last.type === 'insert' &&
+        next.type === 'insert' &&
+        last.old_tokens.length === 0 &&
+        next.old_tokens.length === 0
+      ) {
+        const expectedNext =
+          last.position + (last.new_text ? last.new_text.length + 1 : 0)
+        if (next.position === expectedNext) {
+          return [
+            ...prev.slice(0, -1),
+            {
+              ...last,
+              new_text: last.new_text
+                ? `${last.new_text} ${next.new_text}`
+                : next.new_text,
+              timestamp: next.timestamp,
+            },
+          ]
+        }
+      }
+
+      return [...prev, next]
+    })
+  }
 
   const selectedOldTokens = useMemo(
     () => selectionToOldTokens(words, selection),
@@ -232,41 +290,47 @@ export function TranscriptEditor({
     const start = Math.min(range.start, range.end)
     const end = Math.max(range.start, range.end)
     const oldTokens = selectionToOldTokens(words, range)
+    const position = computeCharOffset(words, start)
 
     setWords((prev) => prev.filter((_, index) => index < start || index > end))
     setCursorIndex(start)
     clearSelection()
 
-    const position = computeCharOffset(words, start)
-    setOperations((prev) => [
-      ...prev,
-      {
-        type: 'delete',
-        position,
-        old_tokens: oldTokens,
-        new_text: '',
-        timestamp: new Date().toISOString(),
-      },
-    ])
+    appendOperation({
+      type: 'delete',
+      position,
+      old_tokens: oldTokens,
+      new_text: '',
+      timestamp: new Date().toISOString(),
+    })
   }
 
-  function commitDraft(): void {
-    const text = draft.trim()
-    if (!text) return
-    pushUndo()
+  function applyInsertionText(
+    raw: string,
+    replaceRange: SelectionRange | null = null
+  ): void {
+    const normalized = normalizeInsertedText(raw)
+    if (!normalized) return
 
-    const insertWords = text.split(/\s+/).filter(Boolean)
+    const insertWords = normalized.split(' ').filter(Boolean)
     if (insertWords.length === 0) return
 
-    const position = computeCharOffset(words, cursorIndex)
-    const oldTokens = pendingReplaceTokens ?? []
+    pushUndo()
+
+    const range = replaceRange
+    const start = range ? Math.min(range.start, range.end) : cursorIndex
+    const end = range ? Math.max(range.start, range.end) : start - 1
+    const oldTokens = range
+      ? selectionToOldTokens(words, range)
+      : (pendingReplaceTokens ?? [])
     const type: EditOperation['type'] =
-      pendingReplaceTokens && pendingReplaceTokens.length > 0
+      range || (pendingReplaceTokens && pendingReplaceTokens.length > 0)
         ? 'replace'
         : 'insert'
+    const position = computeCharOffset(words, start)
 
     const inserted: WordNode[] = insertWords.map((word, index) => ({
-      id: `ins-${Date.now()}-${cursorIndex}-${index}`,
+      id: `ins-${Date.now()}-${start}-${index}`,
       tokenIds: [],
       wordText: word,
       punctuationTokens: [],
@@ -275,26 +339,32 @@ export function TranscriptEditor({
       kind: 'inserted',
     }))
 
-    setWords((prev) => [
-      ...prev.slice(0, cursorIndex),
-      ...inserted,
-      ...prev.slice(cursorIndex),
-    ])
-    setCursorIndex((prev) => prev + inserted.length)
+    const nextWords = range
+      ? [...words.slice(0, start), ...inserted, ...words.slice(end + 1)]
+      : [
+          ...words.slice(0, cursorIndex),
+          ...inserted,
+          ...words.slice(cursorIndex),
+        ]
+
+    setWords(nextWords)
+    setCursorIndex(start + inserted.length)
     setDraft('')
     setPendingReplaceTokens(null)
     clearSelection()
 
-    setOperations((prev) => [
-      ...prev,
-      {
-        type,
-        position,
-        old_tokens: oldTokens,
-        new_text: insertWords.join(' '),
-        timestamp: new Date().toISOString(),
-      },
-    ])
+    appendOperation({
+      type,
+      position,
+      old_tokens: oldTokens,
+      new_text: normalized,
+      timestamp: new Date().toISOString(),
+    })
+  }
+
+  function commitDraft(): void {
+    if (!draft.trim()) return
+    applyInsertionText(draft)
   }
 
   function startReplaceIfSelected(): void {
@@ -317,6 +387,21 @@ export function TranscriptEditor({
         setSelection({ start: 0, end: words.length - 1 })
         setCursorIndex(words.length)
       }
+      return
+    }
+    if (modifier && event.key.toLowerCase() === 'c') {
+      if (!selection) return
+      event.preventDefault()
+      const text = selectionToText(words, selection)
+      void navigator.clipboard.writeText(text).catch(() => {})
+      return
+    }
+    if (modifier && event.key.toLowerCase() === 'x') {
+      if (!selection) return
+      event.preventDefault()
+      const text = selectionToText(words, selection)
+      void navigator.clipboard.writeText(text).catch(() => {})
+      deleteRange(selection)
       return
     }
     if (modifier && event.key.toLowerCase() === 'z') {
@@ -377,6 +462,10 @@ export function TranscriptEditor({
 
     if (event.key === 'Escape') {
       event.preventDefault()
+      if (pendingReplaceTokens) {
+        undo()
+        return
+      }
       setDraft('')
       setPendingReplaceTokens(null)
       clearSelection()
@@ -425,6 +514,31 @@ export function TranscriptEditor({
         ref={containerRef}
         tabIndex={0}
         onKeyDown={onKeyDown}
+        onPaste={(event) => {
+          event.preventDefault()
+          const text = event.clipboardData.getData('text/plain')
+          if (!text) return
+          const combined = draft ? `${draft} ${text}` : text
+          if (selection) {
+            applyInsertionText(combined, selection)
+          } else {
+            applyInsertionText(combined)
+          }
+        }}
+        onDrop={(event) => {
+          event.preventDefault()
+          const text = event.dataTransfer.getData('text/plain')
+          if (!text) return
+          const combined = draft ? `${draft} ${text}` : text
+          if (selection) {
+            applyInsertionText(combined, selection)
+          } else {
+            applyInsertionText(combined)
+          }
+        }}
+        onDragOver={(event) => {
+          event.preventDefault()
+        }}
         style={{
           padding: 12,
           border: '1px solid #ddd',
