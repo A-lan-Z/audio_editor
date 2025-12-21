@@ -790,29 +790,29 @@ Research ASR options and select model for MVP.
 ---
 
 #### T302: Create TranscriptionService Interface
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Low
 - **Dependencies:** T301
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** AI.md (interfaces)
 
 **Description:**
 Define abstract interface for transcription services.
 
 **Acceptance Criteria:**
-- [ ] backend/services/transcription_service.py created
-- [ ] Abstract class TranscriptionService with methods:
+- [x] backend/services/transcription_service.py created
+- [x] Abstract class TranscriptionService with methods:
   - transcribe(audio_path: str) -> Transcript
   - get_word_timestamps(audio_path: str) -> List[Token]
-- [ ] Allows swapping implementations
-- [ ] Type hints and docstrings complete
+- [x] Allows swapping implementations
+- [x] Type hints and docstrings complete
 
 **Notes:**
 - Enables testing with mock service
 - Future: support multiple ASR backends
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
