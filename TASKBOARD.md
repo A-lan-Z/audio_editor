@@ -599,11 +599,11 @@ Validate audio format and convert to standard format if needed.
 ---
 
 #### T203: Implement Duration Check
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Low
 - **Dependencies:** T202
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-4
 
 **Description:**
@@ -620,7 +620,7 @@ Check audio duration and reject files exceeding limit.
 - Use librosa.get_duration() for accuracy
 - Duration check happens after format validation
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

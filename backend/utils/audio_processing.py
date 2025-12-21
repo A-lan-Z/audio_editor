@@ -10,6 +10,8 @@ from pydub.exceptions import CouldntDecodeError
 from backend.utils.errors import InvalidAudioFormat
 
 SUPPORTED_EXTENSIONS: set[str] = {".wav", ".mp3"}
+MAX_DURATION_SECONDS: float = 600.0
+WARN_DURATION_SECONDS: float = 300.0
 
 
 def validate_extension(path: Path) -> str:
@@ -59,3 +61,8 @@ def ensure_wav_pcm16(path: Path) -> Path:
     dest_path = path.with_suffix(".wav")
     convert_mp3_to_wav_pcm16(path, dest_path)
     return dest_path
+
+
+def get_duration_seconds(path: Path) -> float:
+    duration = float(librosa.get_duration(path=str(path)))
+    return duration

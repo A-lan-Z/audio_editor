@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import shutil
 import tempfile
 from pathlib import Path
@@ -8,7 +9,13 @@ from uuid import UUID
 from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel, ConfigDict
 
-from backend.utils.audio_processing import ensure_wav_pcm16, validate_audio_decodable
+from backend.utils.audio_processing import (
+    MAX_DURATION_SECONDS,
+    WARN_DURATION_SECONDS,
+    ensure_wav_pcm16,
+    get_duration_seconds,
+    validate_audio_decodable,
+)
 from backend.utils.errors import ProjectNotFound, ValidationError
 from backend.utils.storage import (
     StorageError,
@@ -17,6 +24,7 @@ from backend.utils.storage import (
 )
 
 router = APIRouter(prefix="/api/projects", tags=["upload"])
+logger = logging.getLogger("textaudio")
 
 
 class UploadResponse(BaseModel):
@@ -79,6 +87,18 @@ def upload_audio(project_id: UUID, file: UploadFile = File(...)) -> UploadRespon
         if converted_path != dest_path:
             dest_path.unlink(missing_ok=True)
             dest_path = converted_path
+        duration_seconds = get_duration_seconds(dest_path)
+        if duration_seconds > WARN_DURATION_SECONDS:
+            logger.warning(
+                "Audio duration exceeds warning threshold: %.1fs project_id=%s",
+                duration_seconds,
+                project_id,
+            )
+        if duration_seconds > MAX_DURATION_SECONDS:
+            minutes = duration_seconds / 60.0
+            raise ValidationError(
+                f"This file is too long ({minutes:.1f} min). Max 10 minutes."
+            )
     except Exception:  # noqa: BLE001
         dest_path.unlink(missing_ok=True)
         raise
