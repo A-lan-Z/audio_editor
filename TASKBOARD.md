@@ -514,11 +514,11 @@ Configure Python logging with appropriate levels and format.
 ---
 
 #### T109: Write Unit Tests for Core Services
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Medium
 - **Dependencies:** T103, T104, T107
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Testing standards
 
 **Description:**
@@ -537,7 +537,7 @@ Create pytest tests for ProjectManager and storage utilities.
 - Mock file system operations where appropriate
 - Use tmp_path fixture for file tests
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
