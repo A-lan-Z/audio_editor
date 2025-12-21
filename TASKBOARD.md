@@ -1398,29 +1398,29 @@ Visually distinguish original vs. edited text.
 ---
 
 #### T411: Maintain Token Mapping Integrity After Edits
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** High
 - **Dependencies:** T406, T408
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-11
 
 **Description:**
 Ensure token-to-audio mapping remains correct after edits.
 
 **Acceptance Criteria:**
-- [ ] After deletion: removed tokens marked, indices adjusted
-- [ ] After insertion: new text has no token mapping (yet)
-- [ ] After replacement: old tokens marked, new text tracked separately
-- [ ] Timeline remains consistent (no timestamp overlaps)
-- [ ] Can reconstruct audio from token mapping
-- [ ] Test complex edit sequences (delete, then replace, then undo)
+- [x] After deletion: removed tokens marked, indices adjusted
+- [x] After insertion: new text has no token mapping (yet)
+- [x] After replacement: old tokens marked, new text tracked separately
+- [x] Timeline remains consistent (no timestamp overlaps)
+- [x] Can reconstruct audio from token mapping
+- [x] Test complex edit sequences (delete, then replace, then undo)
 
 **Notes:**
 - May need to re-index tokens after operations
 - Preserve original token IDs for reference
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

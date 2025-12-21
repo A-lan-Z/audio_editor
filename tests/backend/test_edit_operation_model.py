@@ -43,7 +43,9 @@ def test_apply_delete_by_token_ids(sample_transcript: Transcript) -> None:
     updated = op.apply(sample_transcript)
 
     assert updated.to_text() == "Hello,"
-    assert all(token.id not in set(old_ids) for token in updated.tokens)
+    deleted = [token for token in updated.tokens if token.id in set(old_ids)]
+    assert deleted
+    assert all(token.status == "deleted" for token in deleted)
 
 
 def test_apply_insert_by_position(sample_transcript: Transcript) -> None:
@@ -62,4 +64,39 @@ def test_apply_replace_by_token_ids(sample_transcript: Transcript) -> None:
     updated = op.apply(sample_transcript)
 
     assert updated.to_text() == "Hello, there"
-    assert all(token.id not in set(old_ids) for token in updated.tokens)
+    replaced = [token for token in updated.tokens if token.id in set(old_ids)]
+    assert replaced
+    assert all(token.status == "replaced" for token in replaced)
+    inserted = [token for token in updated.tokens if token.text == "there"]
+    assert inserted
+    assert all(token.status == "inserted" for token in inserted)
+
+
+def test_apply_sequence_delete_replace_preserves_tombstones(
+    sample_transcript: Transcript,
+) -> None:
+    original = sample_transcript
+
+    delete_ids = [original.tokens[0].id, original.tokens[1].id]
+    delete_op = EditOperation(
+        type="delete", position=0, old_tokens=delete_ids, new_text=""
+    )
+    after_delete = delete_op.apply(original)
+    assert after_delete.to_text() == "world"
+    assert {t.id for t in after_delete.tokens if t.status == "deleted"} >= set(
+        delete_ids
+    )
+
+    replace_ids = [original.tokens[2].id]
+    replace_op = EditOperation(
+        type="replace", position=0, old_tokens=replace_ids, new_text="there"
+    )
+    after_replace = replace_op.apply(after_delete)
+    assert after_replace.to_text() == "there"
+    assert any(
+        t.id in set(replace_ids) and t.status == "replaced"
+        for t in after_replace.tokens
+    )
+    assert any(
+        t.text == "there" and t.status == "inserted" for t in after_replace.tokens
+    )

@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 TokenType = Literal["word", "punctuation", "pause"]
+TokenStatus = Literal["original", "deleted", "replaced", "inserted", "generated"]
 
 
 class Token(BaseModel):
@@ -17,6 +18,7 @@ class Token(BaseModel):
     start: float = Field(ge=0)
     end: float = Field(ge=0)
     type: TokenType
+    status: TokenStatus = Field(default="original")
 
     @field_validator("end")
     @classmethod
@@ -54,7 +56,12 @@ class Transcript(BaseModel):
 
     def to_text(self) -> str:
         parts: list[str] = []
-        for token in self.tokens:
+        active = [
+            token
+            for token in self.tokens
+            if token.status not in {"deleted", "replaced"}
+        ]
+        for token in active:
             if token.type == "punctuation":
                 if not parts:
                     parts.append(token.text)

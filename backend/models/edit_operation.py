@@ -12,14 +12,16 @@ from backend.utils.asr_tokens import WordSpan, word_spans_to_tokens
 EditType = Literal["insert", "delete", "replace", "pause_adjust"]
 
 
-def _token_char_spans(tokens: list[Token]) -> list[tuple[int, int]]:
+def _active_token_char_spans(tokens: list[Token]) -> list[tuple[int, int, int]]:
     offset = 0
-    spans: list[tuple[int, int]] = []
-    for token in tokens:
+    spans: list[tuple[int, int, int]] = []
+    for index, token in enumerate(tokens):
+        if token.status in {"deleted", "replaced"}:
+            continue
         if token.type == "punctuation":
             start = offset
             end = offset + len(token.text)
-            spans.append((start, end))
+            spans.append((index, start, end))
             offset = end
             continue
 
@@ -27,39 +29,42 @@ def _token_char_spans(tokens: list[Token]) -> list[tuple[int, int]]:
             offset += 1
         start = offset
         end = offset + len(token.text)
-        spans.append((start, end))
+        spans.append((index, start, end))
         offset = end
 
     return spans
 
 
 def _insertion_index_for_position(tokens: list[Token], position: int) -> int:
-    spans = _token_char_spans(tokens)
+    spans = _active_token_char_spans(tokens)
     if not spans:
         return 0
 
-    for index, (start, end) in enumerate(spans):
+    for full_index, start, end in spans:
         if position < start:
-            return index
+            return full_index
         if start <= position < end:
             midpoint = start + max(end - start, 1) // 2
-            return index if position < midpoint else index + 1
+            return full_index if position < midpoint else full_index + 1
 
-    return len(tokens)
+    last_full_index = spans[-1][0]
+    return last_full_index + 1
 
 
 def _deletion_index_for_position(tokens: list[Token], position: int) -> int | None:
-    spans = _token_char_spans(tokens)
+    spans = _active_token_char_spans(tokens)
     if not spans:
         return None
 
-    for index, (start, end) in enumerate(spans):
+    previous_full_index: int | None = None
+    for full_index, start, end in spans:
         if start <= position < end:
-            return index
+            return full_index
         if position < start:
-            return index - 1 if index > 0 else None
+            return previous_full_index
+        previous_full_index = full_index
 
-    return len(tokens) - 1
+    return spans[-1][0]
 
 
 def _anchor_time(tokens: list[Token], insertion_index: int) -> float:
@@ -94,11 +99,20 @@ class EditOperation(BaseModel):
         if self.type == "delete":
             if self.old_tokens:
                 remove = set(self.old_tokens)
-                tokens = [token for token in tokens if token.id not in remove]
+                tokens = [
+                    (
+                        token.model_copy(update={"status": "deleted"})
+                        if token.id in remove
+                        else token
+                    )
+                    for token in tokens
+                ]
             else:
                 index = _deletion_index_for_position(tokens, self.position)
                 if index is not None and 0 <= index < len(tokens):
-                    tokens = [token for i, token in enumerate(tokens) if i != index]
+                    tokens[index] = tokens[index].model_copy(
+                        update={"status": "deleted"}
+                    )
 
             return Transcript(
                 tokens=tokens,
@@ -117,14 +131,24 @@ class EditOperation(BaseModel):
                     if indices
                     else _insertion_index_for_position(tokens, self.position)
                 )
-                tokens = [token for token in tokens if token.id not in remove]
+                tokens = [
+                    (
+                        token.model_copy(update={"status": "replaced"})
+                        if token.id in remove
+                        else token
+                    )
+                    for token in tokens
+                ]
             else:
                 insertion_index = _insertion_index_for_position(tokens, self.position)
 
             anchor = _anchor_time(tokens, insertion_index)
-            inserted = word_spans_to_tokens(
-                [WordSpan(text=self.new_text, start=anchor, end=anchor)]
-            )
+            inserted = [
+                token.model_copy(update={"status": "inserted"})
+                for token in word_spans_to_tokens(
+                    [WordSpan(text=self.new_text, start=anchor, end=anchor)]
+                )
+            ]
             tokens = [*tokens[:insertion_index], *inserted, *tokens[insertion_index:]]
 
             return Transcript(
@@ -137,9 +161,12 @@ class EditOperation(BaseModel):
         if self.type == "insert":
             insertion_index = _insertion_index_for_position(tokens, self.position)
             anchor = _anchor_time(tokens, insertion_index)
-            inserted = word_spans_to_tokens(
-                [WordSpan(text=self.new_text, start=anchor, end=anchor)]
-            )
+            inserted = [
+                token.model_copy(update={"status": "inserted"})
+                for token in word_spans_to_tokens(
+                    [WordSpan(text=self.new_text, start=anchor, end=anchor)]
+                )
+            ]
             tokens = [*tokens[:insertion_index], *inserted, *tokens[insertion_index:]]
 
             return Transcript(
