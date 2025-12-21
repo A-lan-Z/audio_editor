@@ -18,6 +18,10 @@ Contributor guide for TextAudio Edit. Use this alongside `requirements.md` and `
 - TypeScript/JavaScript: use `eslint` + `prettier`; default to named exports for modules, `PascalCase` for components, `camelCase` for variables/functions.
 - Keep audio/time logic documented with short comments; avoid silent magic numbers.
 
+## Formatting & Linting
+- Python: `black` configured in `pyproject.toml`, `ruff` configured in `ruff.toml`.
+- Frontend: `prettier` configured in `.prettierrc`, `eslint` configured in `frontend/.eslintrc.json`.
+
 ## Testing Guidelines
 - Use `pytest` for backend (name files `test_*.py`) and `vitest`/React Testing Library for frontend (`*.test.ts(x)`).
 - Cover transcript-to-audio mapping, edit operations, and error handling; add regression tests for any audio alignment or synthesis fixes.

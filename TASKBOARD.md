@@ -189,11 +189,11 @@ Create comprehensive .gitignore to exclude generated files, dependencies, and se
 ---
 
 #### T005: Set Up Code Formatting Tools
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** T002, T003
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** AGENTS.md conventions
 
 **Description:**
@@ -211,7 +211,7 @@ Configure black, ruff, prettier, and eslint with project standards.
 - Follow AGENTS.md guidelines: 4-space indent for Python, 2-space for TS
 - Configure ruff to check type hints
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
