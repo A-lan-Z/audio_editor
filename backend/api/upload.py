@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import shutil
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -23,6 +24,7 @@ from backend.utils.storage import (
     load_project_metadata,
     project_original_wav_path,
     project_uploads_dir,
+    save_project_metadata,
 )
 
 router = APIRouter(prefix="/api/projects", tags=["upload"])
@@ -83,6 +85,7 @@ def upload_audio(project_id: UUID, file: UploadFile = File(...)) -> UploadRespon
     except OSError as exc:
         raise ValidationError("Failed to save uploaded file") from exc
 
+    final_path = project_original_wav_path(project_id)
     try:
         validate_audio_decodable(dest_path)
         converted_path = ensure_wav_pcm16(dest_path)
@@ -102,18 +105,26 @@ def upload_audio(project_id: UUID, file: UploadFile = File(...)) -> UploadRespon
                 f"This file is too long ({minutes:.1f} min). Max 10 minutes."
             )
 
-        normalize_to_mono_wav(
+        duration_seconds, sample_rate_hz, channels = normalize_to_mono_wav(
             src_path=dest_path,
-            dest_path=project_original_wav_path(project_id),
+            dest_path=final_path,
         )
+        project.audio_path = str(final_path)
+        project.updated_at = datetime.now(UTC)
+        project.metadata["duration"] = duration_seconds
+        project.metadata["sample_rate"] = sample_rate_hz
+        project.metadata["channels"] = channels
+        save_project_metadata(project)
+
+        dest_path.unlink(missing_ok=True)
     except Exception:  # noqa: BLE001
         dest_path.unlink(missing_ok=True)
         raise
 
     return UploadResponse(
         project_id=project.id,
-        filename=dest_path.name,
-        content_type=file.content_type,
-        size_bytes=dest_path.stat().st_size,
-        status="uploaded",
+        filename=final_path.name,
+        content_type="audio/wav",
+        size_bytes=final_path.stat().st_size,
+        status="processed",
     )

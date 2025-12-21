@@ -651,11 +651,11 @@ Convert audio to mono and consistent sample rate for model compatibility.
 ---
 
 #### T205: Store Original Audio in Project Directory
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Low
 - **Dependencies:** T204
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-2, NFR-6
 
 **Description:**
@@ -672,7 +672,7 @@ Save processed audio to project-specific directory structure.
 - Use atomic file writes (write to temp, then rename)
 - Update Project model with audio metadata
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
