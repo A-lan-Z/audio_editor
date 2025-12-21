@@ -213,3 +213,83 @@ export async function getTranscript(projectId: string): Promise<Transcript> {
 
   return data as Transcript
 }
+
+export type EditOperationPayload = {
+  id: string
+  type: 'insert' | 'delete' | 'replace'
+  position: number
+  old_tokens: string[]
+  new_text: string
+  timestamp: string
+}
+
+export async function submitEditOperation(
+  projectId: string,
+  operation: EditOperationPayload
+): Promise<Transcript> {
+  const response = await fetch(`/api/projects/${projectId}/edit`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(operation),
+  })
+
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Failed to submit edit (${response.status})`)
+  }
+
+  return data as Transcript
+}
+
+export async function undoEdit(projectId: string): Promise<Transcript> {
+  const response = await fetch(`/api/projects/${projectId}/undo`, {
+    method: 'POST',
+  })
+
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Undo failed (${response.status})`)
+  }
+
+  return data as Transcript
+}
+
+export async function redoEdit(projectId: string): Promise<Transcript> {
+  const response = await fetch(`/api/projects/${projectId}/redo`, {
+    method: 'POST',
+  })
+
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Redo failed (${response.status})`)
+  }
+
+  return data as Transcript
+}

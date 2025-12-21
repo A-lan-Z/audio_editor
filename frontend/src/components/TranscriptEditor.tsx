@@ -1,6 +1,13 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { Transcript, TranscriptToken } from '@/services/projects'
+import {
+  redoEdit,
+  submitEditOperation,
+  undoEdit,
+  type EditOperationPayload,
+  type Transcript,
+  type TranscriptToken,
+} from '@/services/projects'
 
 type WordNode = {
   id: string
@@ -12,21 +19,13 @@ type WordNode = {
   kind: 'original' | 'inserted'
 }
 
-type EditOperation = {
-  type: 'insert' | 'delete' | 'replace'
-  position: number
-  old_tokens: string[]
-  new_text: string
-  timestamp: string
-}
-
 type EditorSnapshot = {
   words: WordNode[]
   cursorIndex: number
   selection: SelectionRange | null
   draft: string
   pendingReplaceTokens: string[] | null
-  operations: EditOperation[]
+  operations: EditOperationPayload[]
 }
 
 type SelectionRange = {
@@ -41,6 +40,20 @@ function isPrintableKey(event: React.KeyboardEvent): boolean {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
+}
+
+function uuidV4(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  bytes[6] = (bytes[6] & 0x0f) | 0x40
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  const hex = Array.from(bytes)
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
 }
 
 function normalizeInsertedText(text: string): string {
@@ -148,10 +161,12 @@ function selectionToText(
 
 export function TranscriptEditor({
   transcript,
+  projectId,
   onOperationsChange,
 }: {
   transcript: Transcript
-  onOperationsChange?: (operations: EditOperation[]) => void
+  projectId?: string
+  onOperationsChange?: (operations: EditOperationPayload[]) => void
 }): JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -169,51 +184,96 @@ export function TranscriptEditor({
   const [pendingReplaceTokens, setPendingReplaceTokens] = useState<
     string[] | null
   >(null)
-  const [operations, setOperations] = useState<EditOperation[]>([])
+  const [operations, setOperations] = useState<EditOperationPayload[]>([])
   const [undoStack, setUndoStack] = useState<EditorSnapshot[]>([])
   const [redoStack, setRedoStack] = useState<EditorSnapshot[]>([])
+  const [backendStatus, setBackendStatus] = useState<{
+    status: 'idle' | 'syncing' | 'ok' | 'error'
+    detail: string | null
+  }>({ status: 'idle', detail: null })
 
   useEffect(() => {
     onOperationsChange?.(operations)
   }, [operations, onOperationsChange])
 
-  function appendOperation(next: EditOperation): void {
-    setOperations((prev) => {
-      const last = prev.at(-1)
-      if (!last) return [...prev, next]
-
+  function recordOperation(next: EditOperationPayload): EditOperationPayload {
+    const last = operations.at(-1)
+    if (
+      last &&
+      last.type === 'insert' &&
+      next.type === 'insert' &&
+      last.old_tokens.length === 0 &&
+      next.old_tokens.length === 0
+    ) {
       const lastTime = Date.parse(last.timestamp)
       const nextTime = Date.parse(next.timestamp)
       const withinWindow =
         Number.isFinite(lastTime) &&
         Number.isFinite(nextTime) &&
         nextTime - lastTime < 900
+      const expectedNext =
+        last.position + (last.new_text ? last.new_text.length + 1 : 0)
 
-      if (
-        withinWindow &&
-        last.type === 'insert' &&
-        next.type === 'insert' &&
-        last.old_tokens.length === 0 &&
-        next.old_tokens.length === 0
-      ) {
-        const expectedNext =
-          last.position + (last.new_text ? last.new_text.length + 1 : 0)
-        if (next.position === expectedNext) {
-          return [
-            ...prev.slice(0, -1),
-            {
-              ...last,
-              new_text: last.new_text
-                ? `${last.new_text} ${next.new_text}`
-                : next.new_text,
-              timestamp: next.timestamp,
-            },
-          ]
+      if (withinWindow && next.position === expectedNext) {
+        const merged: EditOperationPayload = {
+          ...last,
+          new_text: last.new_text
+            ? `${last.new_text} ${next.new_text}`
+            : next.new_text,
+          timestamp: next.timestamp,
         }
+        setOperations((prev) => [...prev.slice(0, -1), merged])
+        return merged
       }
+    }
 
-      return [...prev, next]
+    setOperations((prev) => [...prev, next])
+    return next
+  }
+
+  async function syncOperation(operation: EditOperationPayload): Promise<void> {
+    if (!projectId) return
+    setBackendStatus({
+      status: 'syncing',
+      detail: `${operation.type} ${operation.id}`,
     })
+    try {
+      await submitEditOperation(projectId, operation)
+      setBackendStatus({
+        status: 'ok',
+        detail: `${operation.type} ${operation.id}`,
+      })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to sync edit'
+      setBackendStatus({ status: 'error', detail: message })
+    }
+  }
+
+  async function syncUndo(): Promise<void> {
+    if (!projectId) return
+    setBackendStatus({ status: 'syncing', detail: 'undo' })
+    try {
+      await undoEdit(projectId)
+      setBackendStatus({ status: 'ok', detail: 'undo' })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to sync undo'
+      setBackendStatus({ status: 'error', detail: message })
+    }
+  }
+
+  async function syncRedo(): Promise<void> {
+    if (!projectId) return
+    setBackendStatus({ status: 'syncing', detail: 'redo' })
+    try {
+      await redoEdit(projectId)
+      setBackendStatus({ status: 'ok', detail: 'redo' })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to sync redo'
+      setBackendStatus({ status: 'error', detail: message })
+    }
   }
 
   const selectedOldTokens = useMemo(
@@ -296,13 +356,16 @@ export function TranscriptEditor({
     setCursorIndex(start)
     clearSelection()
 
-    appendOperation({
+    const op: EditOperationPayload = {
+      id: uuidV4(),
       type: 'delete',
       position,
       old_tokens: oldTokens,
       new_text: '',
       timestamp: new Date().toISOString(),
-    })
+    }
+    const recorded = recordOperation(op)
+    void syncOperation(recorded)
   }
 
   function applyInsertionText(
@@ -323,7 +386,7 @@ export function TranscriptEditor({
     const oldTokens = range
       ? selectionToOldTokens(words, range)
       : (pendingReplaceTokens ?? [])
-    const type: EditOperation['type'] =
+    const type: EditOperationPayload['type'] =
       range || (pendingReplaceTokens && pendingReplaceTokens.length > 0)
         ? 'replace'
         : 'insert'
@@ -353,13 +416,16 @@ export function TranscriptEditor({
     setPendingReplaceTokens(null)
     clearSelection()
 
-    appendOperation({
+    const op: EditOperationPayload = {
+      id: uuidV4(),
       type,
       position,
       old_tokens: oldTokens,
       new_text: normalized,
       timestamp: new Date().toISOString(),
-    })
+    }
+    const recorded = recordOperation(op)
+    void syncOperation(recorded)
   }
 
   function commitDraft(): void {
@@ -408,8 +474,10 @@ export function TranscriptEditor({
       event.preventDefault()
       if (event.shiftKey) {
         redo()
+        void syncRedo()
       } else {
         undo()
+        void syncUndo()
       }
       return
     }
@@ -510,6 +578,30 @@ export function TranscriptEditor({
   return (
     <div style={{ maxWidth: 900, margin: '24px auto 0' }}>
       <h2>Transcript editor</h2>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <button
+          type="button"
+          disabled={undoStack.length === 0}
+          onClick={() => {
+            undo()
+            void syncUndo()
+            focusEditor()
+          }}
+        >
+          Undo
+        </button>
+        <button
+          type="button"
+          disabled={redoStack.length === 0}
+          onClick={() => {
+            redo()
+            void syncRedo()
+            focusEditor()
+          }}
+        >
+          Redo
+        </button>
+      </div>
       <div
         ref={containerRef}
         tabIndex={0}
@@ -688,6 +780,10 @@ export function TranscriptEditor({
           </div>
           <div>
             undoStack: {undoStack.length} redoStack: {redoStack.length}
+          </div>
+          <div>
+            backendSync: {backendStatus.status}
+            {backendStatus.detail ? ` (${backendStatus.detail})` : ''}
           </div>
           <div style={{ marginTop: 8 }}>text: {JSON.stringify(debugText)}</div>
           <div style={{ marginTop: 8, fontWeight: 700 }}>last operations</div>

@@ -1341,31 +1341,31 @@ Create endpoint to submit edits to backend.
 ---
 
 #### T409: Implement Undo/Redo Functionality
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** Medium
 - **Dependencies:** T406, T408
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-13
 
 **Description:**
 Add undo/redo for text edits.
 
 **Acceptance Criteria:**
-- [ ] Undo stack maintains last 10+ operations
-- [ ] Redo stack populated when undo performed
-- [ ] Ctrl+Z (Cmd+Z) triggers undo
-- [ ] Ctrl+Shift+Z triggers redo
-- [ ] UI buttons for undo/redo (disabled when stack empty)
-- [ ] Test undo/redo with various edit sequences
-- [ ] Undo/redo syncs with backend
+- [x] Undo stack maintains last 10+ operations
+- [x] Redo stack populated when undo performed
+- [x] Ctrl+Z (Cmd+Z) triggers undo
+- [x] Ctrl+Shift+Z triggers redo
+- [x] UI buttons for undo/redo (disabled when stack empty)
+- [x] Test undo/redo with various edit sequences
+- [x] Undo/redo syncs with backend
 
 **Notes:**
 - Use command pattern for operations
 - Clear redo stack on new edit
 - Optional: persist undo history to backend
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

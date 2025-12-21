@@ -31,8 +31,12 @@ function App() {
         hasAudio={hasAudio}
         onTranscriptLoaded={setTranscript}
       />
-      {transcript && (
-        <TranscriptEditor key={transcript.created_at} transcript={transcript} />
+      {transcript && projectId && (
+        <TranscriptEditor
+          key={transcript.created_at}
+          transcript={transcript}
+          projectId={projectId}
+        />
       )}
     </>
   )
