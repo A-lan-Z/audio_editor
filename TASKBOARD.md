@@ -135,11 +135,11 @@ Initialize Python virtual environment and create requirements.txt with initial d
 ---
 
 #### T003: Initialize Frontend with Vite + React + TypeScript
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** T001
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-4
 
 **Description:**
@@ -157,7 +157,7 @@ Set up frontend project using Vite scaffolding with React and TypeScript.
 - Configure Vite to proxy API requests to backend (localhost:8000)
 - Set up path aliases (@/ for src/) in tsconfig.json
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
