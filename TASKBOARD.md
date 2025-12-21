@@ -34,7 +34,7 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 
 | Phase | Total Tasks | Not Started | In Progress | Blocked | Testing | Done |
 |-------|-------------|-------------|-------------|---------|---------|------|
-| 0: Scaffolding | 8 | 8 | 0 | 0 | 0 | 0 |
+| 0: Scaffolding | 8 | 0 | 0 | 0 | 0 | 8 |
 | 1: Backend Core | 9 | 9 | 0 | 0 | 0 | 0 |
 | 2: Audio Input | 10 | 10 | 0 | 0 | 0 | 0 |
 | 3: Transcription | 13 | 13 | 0 | 0 | 0 | 0 |
@@ -45,11 +45,11 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 8: Playback | 11 | 11 | 0 | 0 | 0 | 0 |
 | 9: Export | 13 | 13 | 0 | 0 | 0 | 0 |
 | 10: Polish | 15 | 15 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **119** | **119** | **0** | **0** | **0** | **0** |
+| **TOTAL** | **129** | **121** | **0** | **0** | **0** | **8** |
 
-**Last Updated:** 2025-12-15
-**Current Phase:** 0 (Not Started)
-**Next Task:** T001
+**Last Updated:** 2025-12-21
+**Current Phase:** 1 (Not Started)
+**Next Task:** T101
 
 ---
 
@@ -272,18 +272,18 @@ Create README.md with project overview, setup instructions, and usage guide.
 ---
 
 #### T008: Initialize TASKBOARD.md
-- **Status:** In Progress
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** None
-- **Agent:** Current AI Agent
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Project management
 
 **Description:**
 Create this TASKBOARD.md file with all tasks from WORKPLAN.md.
 
 **Acceptance Criteria:**
-- [ ] All 119 tasks documented with metadata
+- [ ] All 129 tasks documented with metadata
 - [ ] Progress tracking table complete
 - [ ] Status legend and usage instructions included
 - [ ] Linked to WORKPLAN.md
@@ -291,7 +291,7 @@ Create this TASKBOARD.md file with all tasks from WORKPLAN.md.
 **Notes:**
 - This task is being completed as part of initial workplan creation
 
-**Completed:** 2025-12-15
+**Completed:** 2025-12-21
 
 ---
 
