@@ -37,7 +37,7 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 0: Scaffolding | 8 | 0 | 0 | 0 | 0 | 8 |
 | 1: Backend Core | 9 | 0 | 0 | 0 | 0 | 9 |
 | 2: Audio Input | 8 | 0 | 0 | 0 | 0 | 8 |
-| 3: Transcription | 13 | 13 | 0 | 0 | 0 | 0 |
+| 3: Transcription | 13 | 0 | 0 | 0 | 0 | 13 |
 | 4: Text Editor | 12 | 12 | 0 | 0 | 0 | 0 |
 | 5: Audio Deletion | 11 | 11 | 0 | 0 | 0 | 0 |
 | 6: Voice/TTS | 17 | 17 | 0 | 0 | 0 | 0 |
@@ -45,11 +45,11 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 8: Playback | 11 | 11 | 0 | 0 | 0 | 0 |
 | 9: Export | 13 | 13 | 0 | 0 | 0 | 0 |
 | 10: Polish | 15 | 15 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **127** | **102** | **0** | **0** | **0** | **25** |
+| **TOTAL** | **127** | **89** | **0** | **0** | **0** | **38** |
 
 **Last Updated:** 2025-12-21
-**Current Phase:** 3 (Not Started)
-**Next Task:** T301
+**Current Phase:** 4 (Not Started)
+**Next Task:** T401
 
 ---
 
