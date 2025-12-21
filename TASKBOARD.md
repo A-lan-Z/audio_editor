@@ -925,30 +925,30 @@ Define Transcript and Token models for structured data.
 ---
 
 #### T307: Add Transcription Endpoint
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T303, T306
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-6, FR-7
 
 **Description:**
 Create API endpoint to trigger transcription.
 
 **Acceptance Criteria:**
-- [ ] POST /api/projects/{id}/transcribe endpoint
-- [ ] Validates audio file exists
-- [ ] Calls TranscriptionService.transcribe()
-- [ ] Saves transcript to projects/{id}/transcript.json
-- [ ] Updates project metadata with transcript_path
-- [ ] Returns transcript JSON
-- [ ] Test with curl/Postman
+- [x] POST /api/projects/{id}/transcribe endpoint
+- [x] Validates audio file exists
+- [x] Calls TranscriptionService.transcribe()
+- [x] Saves transcript to projects/{id}/transcript.json
+- [x] Updates project metadata with transcript_path
+- [x] Returns transcript JSON
+- [x] Test with curl/Postman
 
 **Notes:**
 - Transcription is synchronous for now (T308 adds async)
 - May take 1-2 minutes for 5min audio
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

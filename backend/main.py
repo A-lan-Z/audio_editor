@@ -9,6 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from backend.api.projects import router as projects_router
+from backend.api.transcription import router as transcription_router
 from backend.api.upload import router as upload_router
 from backend.utils.errors import InvalidAudioFormat, ProjectNotFound, ValidationError
 from backend.utils.logging_config import configure_logging
@@ -39,6 +40,7 @@ def health() -> dict[str, str]:
 
 app.include_router(projects_router)
 app.include_router(upload_router)
+app.include_router(transcription_router)
 app.add_middleware(MaxBodySizeMiddleware)
 
 
