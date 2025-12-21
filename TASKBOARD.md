@@ -162,11 +162,11 @@ Set up frontend project using Vite scaffolding with React and TypeScript.
 ---
 
 #### T004: Create .gitignore
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** T002, T003
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-6
 
 **Description:**
@@ -184,7 +184,7 @@ Create comprehensive .gitignore to exclude generated files, dependencies, and se
 - Keep samples/ directory tracked but exclude large files
 - Document what is gitignored in README.md
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

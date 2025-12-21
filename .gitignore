@@ -1,2 +1,41 @@
+# Python
 .venv/
+venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node / frontend
 node_modules/
+dist/
+build/
+
+# Audio (do not commit user or generated audio)
+*.wav
+*.mp3
+*.ogg
+*.flac
+
+# Local models / weights (keep source `backend/models/` tracked)
+*.pt
+*.pth
+*.ckpt
+/models/
+
+# Project data / outputs
+/data/
+/projects/
+/exports/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
