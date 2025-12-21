@@ -982,28 +982,28 @@ Make transcription async with progress tracking.
 ---
 
 #### T309: Store Transcript JSON
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Low
 - **Dependencies:** T306, T307
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-2
 
 **Description:**
 Persist transcript to project directory in JSON format.
 
 **Acceptance Criteria:**
-- [ ] Transcript saved to projects/{id}/transcript.json
-- [ ] JSON format: {"tokens": [...], "language": "en", "duration": 300.5, ...}
-- [ ] File is human-readable (pretty-printed)
-- [ ] Can be loaded back into Transcript model
-- [ ] Test save/load roundtrip
+- [x] Transcript saved to projects/{id}/transcript.json
+- [x] JSON format: {"tokens": [...], "language": "en", "duration": 300.5, ...}
+- [x] File is human-readable (pretty-printed)
+- [x] Can be loaded back into Transcript model
+- [x] Test save/load roundtrip
 
 **Notes:**
 - Use Pydantic's .json() method
 - Include indent=2 for readability
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

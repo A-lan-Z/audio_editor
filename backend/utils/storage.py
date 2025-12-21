@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from backend.models.project import Project
+from backend.models.transcript import Transcript
 
 DEFAULT_PROJECTS_ROOT = Path("data/projects")
 
@@ -49,12 +50,6 @@ def _ensure_project_dir(project_id: UUID) -> Path:
         project_dir.mkdir(parents=True, exist_ok=True)
         (project_dir / "voice_profile").mkdir(parents=True, exist_ok=True)
         (project_dir / "uploads").mkdir(parents=True, exist_ok=True)
-        transcript_path = project_dir / "transcript.json"
-        if not transcript_path.exists():
-            _atomic_write_json(
-                transcript_path,
-                {"tokens": [], "language": "en", "duration": 0},
-            )
     except OSError as exc:
         raise StorageError(f"Failed to create project directory: {exc}") from exc
     return project_dir
@@ -68,6 +63,11 @@ def project_uploads_dir(project_id: UUID) -> Path:
 def project_original_wav_path(project_id: UUID) -> Path:
     project_dir = _ensure_project_dir(project_id)
     return project_dir / "original.wav"
+
+
+def project_transcript_path(project_id: UUID) -> Path:
+    project_dir = _ensure_project_dir(project_id)
+    return project_dir / "transcript.json"
 
 
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
@@ -130,3 +130,24 @@ def load_project_metadata(project_id: UUID) -> Project:
         raise StorageError("Project metadata is invalid JSON") from exc
     except OSError as exc:
         raise StorageError(f"Failed to read project metadata: {exc}") from exc
+
+
+def save_transcript(project_id: UUID, transcript: Transcript) -> Path:
+    transcript_path = project_transcript_path(project_id)
+    try:
+        data = transcript.to_json().encode("utf-8")
+    except Exception as exc:  # noqa: BLE001
+        raise StorageError("Failed to serialize transcript JSON") from exc
+    _atomic_write_bytes(transcript_path, data)
+    return transcript_path
+
+
+def load_transcript(project_id: UUID) -> Transcript:
+    transcript_path = project_transcript_path(project_id)
+    try:
+        raw = transcript_path.read_text(encoding="utf-8")
+        return Transcript.from_json(raw)
+    except FileNotFoundError as exc:
+        raise StorageError("Transcript not found for project") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise StorageError("Transcript JSON is invalid") from exc

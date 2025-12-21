@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import tempfile
 from pathlib import Path
 from uuid import UUID
 
@@ -18,6 +17,7 @@ from backend.utils.storage import (
     load_project_metadata,
     project_original_wav_path,
     save_project_metadata,
+    save_transcript,
 )
 
 router = APIRouter(prefix="/api/projects", tags=["transcription"])
@@ -38,21 +38,6 @@ class TranscriptionStatusResponse(BaseModel):
     status: str
     progress: float | None = None
     error: str | None = None
-
-
-def _atomic_write_text(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        mode="w",
-        encoding="utf-8",
-        dir=path.parent,
-        suffix=".tmp",
-        delete=False,
-    ) as tmp_file:
-        tmp_path = Path(tmp_file.name)
-        tmp_file.write(content)
-        tmp_file.flush()
-    tmp_path.replace(path)
 
 
 @router.post(
@@ -76,15 +61,8 @@ def transcribe_project(
     if not audio_path.exists():
         raise ValidationError("Audio file not found for project")
 
-    project_dir = project_original_wav_path(project_id).parent
-    transcript_path = project_dir / "transcript.json"
-
     def on_completed(transcript: Transcript) -> None:
-        try:
-            _atomic_write_text(transcript_path, transcript.to_json())
-        except OSError as exc:
-            raise StorageError("Failed to write transcript file") from exc
-
+        transcript_path = save_transcript(project_id, transcript)
         updated = load_project_metadata(project_id)
         updated.metadata["transcript_path"] = str(transcript_path)
         save_project_metadata(updated)
@@ -113,7 +91,7 @@ def get_transcription_status(
     jobs: TranscriptionJobManager = Depends(get_transcription_jobs),
 ) -> TranscriptionStatusResponse:
     try:
-        load_project_metadata(project_id)
+        project = load_project_metadata(project_id)
     except StorageError as exc:
         raise ProjectNotFound(project_id) from exc
 
@@ -127,9 +105,8 @@ def get_transcription_status(
             error=task_state.error,
         )
 
-    project_dir = project_original_wav_path(project_id).parent
-    transcript_path = project_dir / "transcript.json"
-    if transcript_path.exists():
+    transcript_path = project.metadata.get("transcript_path")
+    if isinstance(transcript_path, str) and Path(transcript_path).exists():
         return TranscriptionStatusResponse(
             task_id=None,
             status="completed",
@@ -142,12 +119,15 @@ def get_transcription_status(
 @router.get("/{project_id}/transcript", response_model=Transcript)
 def get_transcript(project_id: UUID) -> Transcript:
     try:
-        load_project_metadata(project_id)
+        project = load_project_metadata(project_id)
     except StorageError as exc:
         raise ProjectNotFound(project_id) from exc
 
-    project_dir = project_original_wav_path(project_id).parent
-    transcript_path = project_dir / "transcript.json"
-    if not transcript_path.exists():
+    transcript_path = project.metadata.get("transcript_path")
+    if not isinstance(transcript_path, str):
         raise ValidationError("Transcript not found for project")
-    return Transcript.from_json(transcript_path.read_text(encoding="utf-8"))
+    try:
+        raw = Path(transcript_path).read_text(encoding="utf-8")
+        return Transcript.from_json(raw)
+    except OSError as exc:
+        raise ValidationError("Transcript not found for project") from exc

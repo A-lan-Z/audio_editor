@@ -22,7 +22,6 @@ def test_save_and_load_project_metadata(tmp_path: object, monkeypatch: object) -
     assert loaded.id == project.id
     assert loaded.metadata["name"] == "demo"
     assert (tmp_path / "projects" / str(project.id) / "voice_profile").is_dir()
-    assert (tmp_path / "projects" / str(project.id) / "transcript.json").is_file()
 
 
 def test_audio_save_and_load(tmp_path: object, monkeypatch: object) -> None:
