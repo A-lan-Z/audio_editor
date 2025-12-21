@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from backend.api.projects import router as projects_router
+from backend.utils.request_limits import MaxBodySizeMiddleware
 
 app = FastAPI(title="TextAudio Edit API")
 
@@ -25,3 +26,4 @@ def health() -> dict[str, str]:
 
 
 app.include_router(projects_router)
+app.add_middleware(MaxBodySizeMiddleware)

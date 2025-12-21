@@ -3,4 +3,4 @@ pytest-cov>=4,<6
 black>=24,<26
 ruff>=0.5,<1.0
 mypy>=1.8,<2.0
-
+httpx>=0.24,<0.28

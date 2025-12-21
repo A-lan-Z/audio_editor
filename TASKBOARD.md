@@ -434,11 +434,11 @@ Implement API endpoints for project creation and retrieval.
 ---
 
 #### T106: Add Request/Response Validation
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Low
 - **Dependencies:** T105
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-10
 
 **Description:**
@@ -455,7 +455,7 @@ Add comprehensive validation for all API inputs and outputs.
 - Use FastAPI's built-in validation
 - Customize error messages for clarity
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
