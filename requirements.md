@@ -5,7 +5,7 @@
 **Product name (working):** TextAudio Edit (placeholder)  
 **Type:** Local web/desktop app (front-end + local backend)  
 **MVP focus:**  
-> Let a single user upload or record a short audio clip (2–5 minutes), auto-generate a transcript, and then **edit the audio by editing text**, including **replacing words using an AI-generated voice** that matches the speaker.
+> Let a single user upload a short audio clip (2–5 minutes), auto-generate a transcript, and then **edit the audio by editing text**, including **replacing words using an AI-generated voice** that matches the speaker.
 
 All advanced/extra features are explicitly **out of scope** for the MVP (no multi-speaker, no teacher dashboards, no collaboration, no cloud SaaS).
 
@@ -23,12 +23,12 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
    - Changing selected text triggers re-generation of that segment’s audio in the user’s voice.
 
 2. **Automatic voice learning from short sample**
-   - The system learns the user’s voice from the uploaded recording (no manual training workflow).
+   - The system learns the user’s voice from the uploaded audio (no manual training workflow).
    - When the user edits words, new audio is generated in a voice that sounds like the original speaker (good enough for demos, not necessarily perfect studio quality).
 
 3. **Minimal, intuitive UI**
    - Single-page experience:
-     - Upload/Record
+     - Upload
      - Transcribe
      - Edit + Play
      - Export
@@ -57,10 +57,10 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 - Single user (e.g., a student) on their own machine.
 - Technical level: can install apps / use a browser, but not a professional audio engineer.
 - Primary use case:
-  - They record themselves reading a 2–5 minute presentation script.
+  - They have a 2–5 minute audio recording of themselves reading a presentation script.
   - They realize there are mistakes, long pauses, or wording they want to change.
   - Instead of re-recording everything, they:
-    1. Upload/record into the app.
+    1. Upload into the app.
     2. Let the app generate a transcript.
     3. Edit the text like a document.
     4. Export the corrected audio.
@@ -94,7 +94,6 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 
 **FR-2**: The user shall be able to:
 - Create a new project by uploading an audio file.
-- Optionally, record directly in the app for a new project.
 - Save/load a project from disk (e.g., as a folder or `.json` + audio files).
 
 *(If saving/loading feels too big for MVP, this can be deferred; but spec it here.)*
@@ -111,16 +110,9 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 - MVP target: 2–5 minutes typical, hard limit ~10 minutes.
 - If input exceeds hard limit, app should display a friendly error.
 
-**FR-5**: Recording:
-- The app shall allow recording from default microphone via browser (if web UI) or OS APIs.
-- Recording is mono by default (simplify processing).
-- Recording sample rate is normalized (e.g., 16kHz or 24kHz) for model compatibility.
-
----
-
 ### 4.3 Transcription
 
-**FR-6**: For each uploaded/recorded audio:
+**FR-6**: For each uploaded audio:
 - The backend shall perform automatic speech recognition (ASR) to produce a transcript.
 
 **FR-7**: The transcript shall have **word-level or token-level timestamps**:
@@ -277,7 +269,7 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 ### 5.4 Usability
 
 **NFR-9**: The UI should be understandable for a first-time user without a tutorial:
-- Clear labels: “1. Upload or Record”, “2. Generate Transcript”, “3. Edit & Play”, “4. Export”.
+- Clear labels: “1. Upload”, “2. Generate Transcript”, “3. Edit & Play”, “4. Export”.
 - Avoid audio jargon (no “bus”, “aux send”, etc.).
 
 **NFR-10**: Error messages should be plain language:
@@ -292,7 +284,7 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 - **Frontend**
   - Single-page web UI (React/Vue/vanilla – implementation detail).
   - Responsible for:
-    - File selection/recording UI.
+    - File selection UI.
     - Displaying transcript in a text editor.
     - Sending edit operations to backend.
     - Controlling playback (via HTML5 audio or custom audio player).
@@ -352,4 +344,3 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 - Should we support multi-language transcription in later versions?
 - How to version control model configs and parameters?
 - How to handle catastrophic edits (e.g., user deletes almost everything) – any auto backup/recovery?
-

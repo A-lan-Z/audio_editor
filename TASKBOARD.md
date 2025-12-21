@@ -36,7 +36,7 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 |-------|-------------|-------------|-------------|---------|---------|------|
 | 0: Scaffolding | 8 | 0 | 0 | 0 | 0 | 8 |
 | 1: Backend Core | 9 | 0 | 0 | 0 | 0 | 9 |
-| 2: Audio Input | 10 | 10 | 0 | 0 | 0 | 0 |
+| 2: Audio Input | 8 | 8 | 0 | 0 | 0 | 0 |
 | 3: Transcription | 13 | 13 | 0 | 0 | 0 | 0 |
 | 4: Text Editor | 12 | 12 | 0 | 0 | 0 | 0 |
 | 5: Audio Deletion | 11 | 11 | 0 | 0 | 0 | 0 |
@@ -45,7 +45,7 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 8: Playback | 11 | 11 | 0 | 0 | 0 | 0 |
 | 9: Export | 13 | 13 | 0 | 0 | 0 | 0 |
 | 10: Polish | 15 | 15 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **129** | **112** | **0** | **0** | **0** | **17** |
+| **TOTAL** | **127** | **110** | **0** | **0** | **0** | **17** |
 
 **Last Updated:** 2025-12-21
 **Current Phase:** 2 (Not Started)
@@ -283,7 +283,7 @@ Create README.md with project overview, setup instructions, and usage guide.
 Create this TASKBOARD.md file with all tasks from WORKPLAN.md.
 
 **Acceptance Criteria:**
-- [ ] All 129 tasks documented with metadata
+- [ ] All 127 tasks documented with metadata
 - [ ] Progress tracking table complete
 - [ ] Status legend and usage instructions included
 - [ ] Linked to WORKPLAN.md
@@ -630,7 +630,7 @@ Check audio duration and reject files exceeding limit.
 - **Complexity:** Medium
 - **Dependencies:** T202
 - **Agent:** (unassigned)
-- **Requirements:** FR-5
+- **Requirements:** FR-3
 
 **Description:**
 Convert audio to mono and consistent sample rate for model compatibility.
@@ -704,68 +704,11 @@ Build React component for audio file upload with drag-and-drop.
 
 ---
 
-#### T207: Implement Browser-Based Audio Recording
-- **Status:** Not Started
-- **Phase:** 2
-- **Complexity:** Medium
-- **Dependencies:** T003
-- **Agent:** (unassigned)
-- **Requirements:** FR-5
-
-**Description:**
-Add audio recording capability using MediaRecorder API.
-
-**Acceptance Criteria:**
-- [ ] frontend/src/components/AudioRecorder.tsx created
-- [ ] Requests microphone permission on mount
-- [ ] Start/Stop recording buttons
-- [ ] Records as WebM or WAV (browser-dependent)
-- [ ] Returns Blob when recording stops
-- [ ] Handles permission denied gracefully
-- [ ] Test in Chrome and Firefox
-
-**Notes:**
-- Use MediaRecorder with audio-only constraints
-- Default to mono recording if supported
-- Handle browser compatibility issues
-
-**Completed:** (date)
-
----
-
-#### T208: Add Recording UI with Playback Preview
-- **Status:** Not Started
-- **Phase:** 2
-- **Complexity:** Medium
-- **Dependencies:** T207
-- **Agent:** (unassigned)
-- **Requirements:** FR-5, NFR-9
-
-**Description:**
-Create UI for recording with visual feedback and preview.
-
-**Acceptance Criteria:**
-- [ ] Shows recording indicator (red dot, timer)
-- [ ] Displays duration while recording
-- [ ] Stop button ends recording
-- [ ] Preview playback of recorded audio before upload
-- [ ] Re-record button to try again
-- [ ] Confirm and upload button sends to backend
-- [ ] Clear, intuitive layout (NFR-9)
-
-**Notes:**
-- Use HTML5 audio element for preview
-- Show waveform visualization (optional, nice-to-have)
-
-**Completed:** (date)
-
----
-
 #### T209: Display Upload Progress and Errors
 - **Status:** Not Started
 - **Phase:** 2
 - **Complexity:** Low
-- **Dependencies:** T206, T208
+- **Dependencies:** T206
 - **Agent:** (unassigned)
 - **Requirements:** NFR-9, NFR-10
 

@@ -103,7 +103,7 @@ Before starting Phase 0, ensure:
 ---
 
 ### Phase 2: Audio Input & Validation
-**Goal:** Handle audio upload, recording, and format validation
+**Goal:** Handle audio upload and format validation
 
 **Tasks:**
 - **T201:** Implement audio upload endpoint: POST /api/projects/{id}/upload
@@ -112,8 +112,6 @@ Before starting Phase 0, ensure:
 - **T204:** Normalize audio to mono, consistent sample rate (16kHz or 24kHz)
 - **T205:** Store original audio in project directory structure
 - **T206:** Create frontend file upload component with drag-and-drop
-- **T207:** Implement browser-based audio recording (MediaRecorder API)
-- **T208:** Add recording UI with start/stop/playback preview
 - **T209:** Display upload progress and validation errors in UI
 - **T210:** Write integration tests for upload and validation logic
 
@@ -122,12 +120,11 @@ Before starting Phase 0, ensure:
 - Files >10 minutes are rejected with clear error message
 - Audio is normalized to mono, 16kHz consistently
 - Frontend shows upload progress and handles errors gracefully
-- Can record audio directly in browser and save to project
 - Tests cover format validation and edge cases
 
 **Dependencies:** Phase 1
 **Estimated Complexity:** Medium
-**Requirements Mapping:** FR-3, FR-4, FR-5, NFR-10
+**Requirements Mapping:** FR-3, FR-4, NFR-10
 
 ---
 
@@ -457,7 +454,6 @@ Before marking a task as "Done":
 | ASR model too slow on target hardware | Use faster-whisper or quantized models; reduce audio quality if needed |
 | Voice cloning quality insufficient | Set user expectations; provide disclaimer; allow model swapping |
 | Audio alignment drift over time | Implement timestamp validation; add manual adjustment tools if needed |
-| Browser recording not supported | Provide fallback upload-only mode; document browser requirements |
 | Export audio has artifacts | Improve cross-fading; add quality settings; test with different audio types |
 
 ### 6.2 MVP Scope Creep Prevention
