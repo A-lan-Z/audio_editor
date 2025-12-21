@@ -244,11 +244,11 @@ Create Makefile to standardize common development tasks.
 ---
 
 #### T007: Write Initial README.md
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** T001-T006
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** General documentation
 
 **Description:**
@@ -267,7 +267,7 @@ Create README.md with project overview, setup instructions, and usage guide.
 - Keep it concise for MVP, expand in Phase 10
 - Use code blocks for commands
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
