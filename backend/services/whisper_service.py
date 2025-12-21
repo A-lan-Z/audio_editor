@@ -9,6 +9,7 @@ from typing import Any
 
 from backend.models.project import Token, Transcript
 from backend.services.transcription_service import TranscriptionService
+from backend.utils.asr_tokens import WordSpan, word_spans_to_tokens
 from backend.utils.errors import ValidationError
 
 logger = logging.getLogger("textaudio")
@@ -100,20 +101,21 @@ class WhisperTranscriptionService(TranscriptionService):
         )
 
         tokens: list[Token] = []
+        spans: list[WordSpan] = []
         for segment in segments:
-            words = segment.words or []
-            for word in words:
-                text = (word.word or "").strip()
-                if not text:
-                    continue
-                tokens.append(
-                    Token(
-                        text=text,
+            for word in segment.words or []:
+                spans.append(
+                    WordSpan(
+                        text=str(word.word or ""),
                         start=float(word.start),
                         end=float(word.end),
-                        type="word",
                     )
                 )
+
+        try:
+            tokens = word_spans_to_tokens(spans)
+        except ValueError as exc:
+            raise ValidationError(f"Invalid ASR token timestamps: {exc}") from exc
 
         _ = info  # reserved for later language/duration plumbing
         return tokens

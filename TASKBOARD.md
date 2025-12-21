@@ -873,28 +873,28 @@ Handle automatic model download and initialization on first run.
 ---
 
 #### T305: Implement Word-Level Timestamp Extraction
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T303
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-7
 
 **Description:**
 Extract precise word-level timestamps from ASR output.
 
 **Acceptance Criteria:**
-- [ ] Each word has start_time and end_time in seconds
-- [ ] Timestamp precision <100ms
-- [ ] Handles punctuation (attach to previous word or separate token)
-- [ ] Validates timestamps (no overlaps, monotonically increasing)
-- [ ] Test timestamp accuracy with known audio
+- [x] Each word has start_time and end_time in seconds
+- [x] Timestamp precision <100ms
+- [x] Handles punctuation (attach to previous word or separate token)
+- [x] Validates timestamps (no overlaps, monotonically increasing)
+- [x] Test timestamp accuracy with known audio
 
 **Notes:**
 - Whisper provides word timestamps with word_timestamps=True
 - Validate: end_time > start_time, next.start >= prev.end
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
