@@ -10,11 +10,13 @@ from starlette.responses import JSONResponse
 
 from backend.api.projects import router as projects_router
 from backend.utils.errors import InvalidAudioFormat, ProjectNotFound, ValidationError
+from backend.utils.logging_config import configure_logging
 from backend.utils.request_limits import MaxBodySizeMiddleware
 from backend.utils.storage import StorageError
 
 app = FastAPI(title="TextAudio Edit API")
 
+configure_logging()
 logger = logging.getLogger("textaudio")
 
 app.add_middleware(
@@ -38,7 +40,9 @@ app.include_router(projects_router)
 app.add_middleware(MaxBodySizeMiddleware)
 
 
-def _error_response(*, status_code: int, error: str, detail: str, code: str) -> JSONResponse:
+def _error_response(
+    *, status_code: int, error: str, detail: str, code: str
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={"error": error, "detail": detail, "code": code},
@@ -56,7 +60,9 @@ async def handle_project_not_found(_: Request, exc: ProjectNotFound) -> JSONResp
 
 
 @app.exception_handler(InvalidAudioFormat)
-async def handle_invalid_audio_format(_: Request, exc: InvalidAudioFormat) -> JSONResponse:
+async def handle_invalid_audio_format(
+    _: Request, exc: InvalidAudioFormat
+) -> JSONResponse:
     return _error_response(
         status_code=400,
         error="Bad Request",
@@ -87,7 +93,9 @@ async def handle_storage_error(_: Request, exc: StorageError) -> JSONResponse:
 
 
 @app.exception_handler(RequestValidationError)
-async def handle_request_validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+async def handle_request_validation_error(
+    _: Request, exc: RequestValidationError
+) -> JSONResponse:
     first = exc.errors()[0] if exc.errors() else {}
     msg = first.get("msg") or "Validation failed"
     return _error_response(
@@ -99,7 +107,9 @@ async def handle_request_validation_error(_: Request, exc: RequestValidationErro
 
 
 @app.exception_handler(StarletteHTTPException)
-async def handle_http_exception(_: Request, exc: StarletteHTTPException) -> JSONResponse:
+async def handle_http_exception(
+    _: Request, exc: StarletteHTTPException
+) -> JSONResponse:
     return _error_response(
         status_code=exc.status_code,
         error="HTTP Error",

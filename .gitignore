@@ -30,6 +30,7 @@ build/
 /data/
 /projects/
 /exports/
+/logs/
 
 # IDE / editor
 .vscode/
