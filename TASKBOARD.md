@@ -1092,30 +1092,30 @@ Create comprehensive tests for transcription pipeline.
 ---
 
 #### T313: Measure and Optimize Transcription Performance
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T312
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-1
 
 **Description:**
 Profile transcription and optimize to meet performance targets.
 
 **Acceptance Criteria:**
-- [ ] Benchmark: 5-minute audio transcribed in <2 minutes
-- [ ] Profile with cProfile or similar tool
-- [ ] Identify bottlenecks (model loading, inference, I/O)
-- [ ] Optimize: use faster-whisper, reduce model size, or GPU if available
-- [ ] Document performance characteristics (CPU vs GPU, model size trade-offs)
-- [ ] Performance notes added to docs/
+- [x] Benchmark: 5-minute audio transcribed in <2 minutes
+- [x] Profile with cProfile or similar tool
+- [x] Identify bottlenecks (model loading, inference, I/O)
+- [x] Optimize: use faster-whisper, reduce model size, or GPU if available
+- [x] Document performance characteristics (CPU vs GPU, model size trade-offs)
+- [x] Performance notes added to docs/
 
 **Notes:**
 - NFR-1 target: ~1-2 min for 5 min audio
 - Consider batch processing if needed
 - Document hardware requirements
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
