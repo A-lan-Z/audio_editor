@@ -762,30 +762,30 @@ Create tests for complete upload workflow.
 ### Phase 3: Automatic Speech Recognition (Transcription)
 
 #### T301: Research and Select ASR Model
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Low
 - **Dependencies:** T002
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-6, FR-7, NFR-1
 
 **Description:**
 Research ASR options and select model for MVP.
 
 **Acceptance Criteria:**
-- [ ] Researched options: Whisper, faster-whisper, Vosk, alternatives
-- [ ] Selected model documented with rationale
-- [ ] Verified model can run locally
-- [ ] Verified model provides word-level timestamps
-- [ ] Performance estimate documented (time per minute of audio)
-- [ ] Decision documented in docs/architecture.md
+- [x] Researched options: Whisper, faster-whisper, Vosk, alternatives
+- [x] Selected model documented with rationale
+- [x] Verified model can run locally
+- [x] Verified model provides word-level timestamps
+- [x] Performance estimate documented (time per minute of audio)
+- [x] Decision documented in docs/architecture.md
 
 **Notes:**
 - Recommend: faster-whisper (good speed/accuracy balance)
 - Check GPU vs CPU performance
 - Consider model size (base, small, medium, large)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
