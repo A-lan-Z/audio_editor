@@ -677,11 +677,11 @@ Save processed audio to project-specific directory structure.
 ---
 
 #### T206: Create Frontend File Upload Component
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Medium
 - **Dependencies:** T003, T201
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-3, NFR-9
 
 **Description:**
@@ -700,7 +700,7 @@ Build React component for audio file upload with drag-and-drop.
 - Use HTML5 drag-and-drop API
 - Show clear visual feedback (hover state, file selected)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
