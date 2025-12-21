@@ -817,31 +817,31 @@ Define abstract interface for transcription services.
 ---
 
 #### T303: Implement WhisperTranscriptionService
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** High
 - **Dependencies:** T302
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-6, FR-7, FR-8
 
 **Description:**
 Implement concrete Whisper-based transcription service.
 
 **Acceptance Criteria:**
-- [ ] backend/services/whisper_service.py created
-- [ ] Implements TranscriptionService interface
-- [ ] Uses faster-whisper or openai-whisper library
-- [ ] Extracts word-level timestamps from output
-- [ ] Handles audio file loading and preprocessing
-- [ ] Returns Transcript with Token list
-- [ ] Test with sample audio file
+- [x] backend/services/whisper_service.py created
+- [x] Implements TranscriptionService interface
+- [x] Uses faster-whisper or openai-whisper library
+- [x] Extracts word-level timestamps from output
+- [x] Handles audio file loading and preprocessing
+- [x] Returns Transcript with Token list
+- [x] Test with sample audio file
 
 **Notes:**
 - Use faster-whisper for better performance
 - Model size: start with "base" or "small" for MVP
 - Language: "en" for English
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
