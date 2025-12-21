@@ -846,29 +846,29 @@ Implement concrete Whisper-based transcription service.
 ---
 
 #### T304: Add Model Download/Initialization
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Medium
 - **Dependencies:** T303
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-4, NFR-5
 
 **Description:**
 Handle automatic model download and initialization on first run.
 
 **Acceptance Criteria:**
-- [ ] Model downloads automatically on first transcription
-- [ ] Models stored in ./models/ directory (gitignored)
-- [ ] Download progress shown in logs
-- [ ] Models cached for subsequent use
-- [ ] Handles download failures gracefully
-- [ ] Model path configurable via environment variable
+- [x] Model downloads automatically on first transcription
+- [x] Models stored in ./models/ directory (gitignored)
+- [x] Download progress shown in logs
+- [x] Models cached for subsequent use
+- [x] Handles download failures gracefully
+- [x] Model path configurable via environment variable
 
 **Notes:**
 - Use HuggingFace model hub or Whisper's built-in downloader
 - Document model size requirements in README
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

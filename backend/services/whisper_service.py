@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os
 import threading
 from dataclasses import dataclass
 from pathlib import Path
@@ -8,6 +10,8 @@ from typing import Any
 from backend.models.project import Token, Transcript
 from backend.services.transcription_service import TranscriptionService
 from backend.utils.errors import ValidationError
+
+logger = logging.getLogger("textaudio")
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,9 +23,17 @@ class WhisperConfig:
     download_root: str | None = None
 
 
+def _default_models_dir() -> str:
+    configured = os.environ.get("TEXTAUDIO_MODELS_DIR")
+    base = Path(configured) if configured else Path("models")
+    base.mkdir(parents=True, exist_ok=True)
+    return str(base)
+
+
 class WhisperTranscriptionService(TranscriptionService):
     def __init__(self, *, config: WhisperConfig | None = None) -> None:
         self._config = config or WhisperConfig()
+        self._download_root = self._config.download_root or _default_models_dir()
         self._model_lock = threading.Lock()
         self._model: Any | None = None
 
@@ -41,12 +53,24 @@ class WhisperTranscriptionService(TranscriptionService):
                     "transcription."
                 ) from exc
 
-            self._model = WhisperModel(
+            logger.info(
+                "Loading ASR model: %s (download_root=%s)",
                 self._config.model_name,
-                device=self._config.device,
-                compute_type=self._config.compute_type,
-                download_root=self._config.download_root,
+                self._download_root,
             )
+            try:
+                self._model = WhisperModel(
+                    self._config.model_name,
+                    device=self._config.device,
+                    compute_type=self._config.compute_type,
+                    download_root=self._download_root,
+                )
+            except Exception as exc:  # noqa: BLE001
+                raise ValidationError(
+                    "Failed to initialize ASR model. If this is the first run, a "
+                    "model download may be required. Check your network connection "
+                    "or set TEXTAUDIO_MODELS_DIR to a writable cache directory."
+                ) from exc
             return self._model
 
     def transcribe(self, audio_path: str) -> Transcript:

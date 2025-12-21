@@ -61,3 +61,4 @@ audio_editor/
 
 - If `make dev` fails to bind ports, ensure nothing is running on `8000`/`5173` and that your environment permits local servers.
 - If Python isn’t found as `python`, use `python3`.
+- ASR models are downloaded/cached on first transcription. Set `TEXTAUDIO_MODELS_DIR` to control where models are stored (default: `./models/`, gitignored).
