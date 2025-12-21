@@ -953,31 +953,31 @@ Create API endpoint to trigger transcription.
 ---
 
 #### T308: Handle Transcription Progress/Status Polling
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** High
 - **Dependencies:** T307
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-1
 
 **Description:**
 Make transcription async with progress tracking.
 
 **Acceptance Criteria:**
-- [ ] Transcription runs in background thread/task
-- [ ] Returns task_id immediately (202 Accepted)
-- [ ] GET /api/projects/{id}/transcribe/status returns progress
-- [ ] Status: queued, processing, completed, failed
-- [ ] Optional: progress percentage (estimated)
-- [ ] Frontend can poll for completion
-- [ ] Completed transcription available via GET /api/projects/{id}/transcript
+- [x] Transcription runs in background thread/task
+- [x] Returns task_id immediately (202 Accepted)
+- [x] GET /api/projects/{id}/transcribe/status returns progress
+- [x] Status: queued, processing, completed, failed
+- [x] Optional: progress percentage (estimated)
+- [x] Frontend can poll for completion
+- [x] Completed transcription available via GET /api/projects/{id}/transcript
 
 **Notes:**
 - Use asyncio or threading
 - Store task state in memory (or Redis for production)
 - Consider WebSocket for real-time updates (optional)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
