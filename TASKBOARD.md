@@ -1370,30 +1370,30 @@ Add undo/redo for text edits.
 ---
 
 #### T410: Add Visual Highlighting for Edited Regions
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** Medium
 - **Dependencies:** T403, T406
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-11
 
 **Description:**
 Visually distinguish original vs. edited text.
 
 **Acceptance Criteria:**
-- [ ] Original tokens: default styling
-- [ ] Deleted tokens: strikethrough + gray color
-- [ ] Inserted text: green background or underline
-- [ ] Replaced tokens: yellow background or highlight
-- [ ] Generated audio segments: blue background or badge
-- [ ] Styling is clear but not distracting
-- [ ] Test various edit combinations
+- [x] Original tokens: default styling
+- [x] Deleted tokens: strikethrough + gray color
+- [x] Inserted text: green background or underline
+- [x] Replaced tokens: yellow background or highlight
+- [x] Generated audio segments: blue background or badge
+- [x] Styling is clear but not distracting
+- [x] Test various edit combinations
 
 **Notes:**
 - Use CSS classes: .token-original, .token-deleted, .token-inserted, .token-replaced
 - Update class on edit operations
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

@@ -16,7 +16,8 @@ type WordNode = {
   punctuationTokens: Array<{ id: string; text: string }>
   start: number | null
   end: number | null
-  kind: 'original' | 'inserted'
+  kind: 'original' | 'inserted' | 'deleted' | 'replaced'
+  origin: 'insert' | 'replace' | null
 }
 
 type EditorSnapshot = {
@@ -73,6 +74,7 @@ function tokensToWords(tokens: TranscriptToken[]): WordNode[] {
         start: token.start,
         end: token.end,
         kind: 'original',
+        origin: null,
       }
       words.push(lastWord)
       continue
@@ -97,7 +99,7 @@ function selectionToOldTokens(
   for (let index = start; index <= end; index += 1) {
     const node = words[index]
     if (!node) continue
-    if (node.kind === 'inserted') continue
+    if (node.kind !== 'original') continue
     ids.push(...node.tokenIds)
   }
   return ids
@@ -106,12 +108,15 @@ function selectionToOldTokens(
 function computeCharOffset(words: WordNode[], cursorIndex: number): number {
   const safe = clamp(cursorIndex, 0, words.length)
   let offset = 0
+  let activeCount = 0
   for (let index = 0; index < safe; index += 1) {
     const word = words[index]
-    if (index > 0) offset += 1
+    if (word.kind === 'deleted' || word.kind === 'replaced') continue
+    if (activeCount > 0) offset += 1
     offset +=
       `${word.wordText}${word.punctuationTokens.map((t) => t.text).join('')}`
         .length
+    activeCount += 1
   }
   return offset
 }
@@ -122,9 +127,34 @@ function getTokenAtCursor(
 ): WordNode | null {
   if (words.length === 0) return null
   if (cursorIndex <= 0) return null
-  const candidate = words[clamp(cursorIndex - 1, 0, words.length - 1)]
-  if (!candidate || candidate.kind === 'inserted') return null
-  return candidate
+  for (
+    let index = clamp(cursorIndex - 1, 0, words.length - 1);
+    index >= 0;
+    index -= 1
+  ) {
+    const candidate = words[index]
+    if (!candidate) continue
+    if (candidate.kind === 'deleted' || candidate.kind === 'replaced') continue
+    if (candidate.kind !== 'original') return null
+    return candidate
+  }
+  return null
+}
+
+function findPreviousEditableIndex(
+  words: WordNode[],
+  cursorIndex: number
+): number | null {
+  for (
+    let index = clamp(cursorIndex - 1, 0, words.length - 1);
+    index >= 0;
+    index -= 1
+  ) {
+    const node = words[index]
+    if (!node) continue
+    if (node.kind === 'original' || node.kind === 'inserted') return index
+  }
+  return null
 }
 
 function getTokensInSelection(
@@ -153,6 +183,7 @@ function selectionToText(
   const end = Math.max(selection.start, selection.end)
   return words
     .slice(start, end + 1)
+    .filter((w) => w.kind !== 'deleted' && w.kind !== 'replaced')
     .map(
       (w) => `${w.wordText}${w.punctuationTokens.map((t) => t.text).join('')}`
     )
@@ -352,7 +383,13 @@ export function TranscriptEditor({
     const oldTokens = selectionToOldTokens(words, range)
     const position = computeCharOffset(words, start)
 
-    setWords((prev) => prev.filter((_, index) => index < start || index > end))
+    setWords((prev) =>
+      prev.map((node, index) => {
+        if (index < start || index > end) return node
+        if (node.kind === 'deleted' || node.kind === 'replaced') return node
+        return { ...node, kind: 'deleted' }
+      })
+    )
     setCursorIndex(start)
     clearSelection()
 
@@ -400,15 +437,35 @@ export function TranscriptEditor({
       start: null,
       end: null,
       kind: 'inserted',
+      origin: type,
     }))
 
-    const nextWords = range
-      ? [...words.slice(0, start), ...inserted, ...words.slice(end + 1)]
-      : [
-          ...words.slice(0, cursorIndex),
-          ...inserted,
-          ...words.slice(cursorIndex),
-        ]
+    const nextWords: WordNode[] = []
+    if (range) {
+      for (let index = 0; index < words.length; index += 1) {
+        if (index === start) {
+          nextWords.push(...inserted)
+        }
+        const node = words[index]
+        if (index >= start && index <= end) {
+          if (node.kind === 'original') {
+            nextWords.push({ ...node, kind: 'replaced' })
+            continue
+          }
+          if (node.kind === 'inserted') {
+            nextWords.push({ ...node, kind: 'deleted' })
+            continue
+          }
+          nextWords.push(node)
+          continue
+        }
+        nextWords.push(node)
+      }
+    } else {
+      nextWords.push(...words.slice(0, cursorIndex))
+      nextWords.push(...inserted)
+      nextWords.push(...words.slice(cursorIndex))
+    }
 
     setWords(nextWords)
     setCursorIndex(start + inserted.length)
@@ -440,7 +497,14 @@ export function TranscriptEditor({
     const end = Math.max(selection.start, selection.end)
     const oldTokens = selectionToOldTokens(words, selection)
     setPendingReplaceTokens(oldTokens)
-    setWords((prev) => prev.filter((_, index) => index < start || index > end))
+    setWords((prev) =>
+      prev.map((node, index) => {
+        if (index < start || index > end) return node
+        if (node.kind === 'original') return { ...node, kind: 'replaced' }
+        if (node.kind === 'inserted') return { ...node, kind: 'deleted' }
+        return node
+      })
+    )
     setCursorIndex(start)
     clearSelection()
   }
@@ -498,8 +562,9 @@ export function TranscriptEditor({
         deleteRange(selection)
         return
       }
-      if (cursorIndex <= 0) return
-      deleteRange({ start: cursorIndex - 1, end: cursorIndex - 1 })
+      const previousIndex = findPreviousEditableIndex(words, cursorIndex)
+      if (previousIndex == null) return
+      deleteRange({ start: previousIndex, end: previousIndex })
       return
     }
 
@@ -568,6 +633,7 @@ export function TranscriptEditor({
 
   const debugText = useMemo(() => {
     const text = words
+      .filter((w) => w.kind !== 'deleted' && w.kind !== 'replaced')
       .map(
         (w) => `${w.wordText}${w.punctuationTokens.map((t) => t.text).join('')}`
       )
@@ -679,21 +745,53 @@ export function TranscriptEditor({
                   alignItems: 'center',
                   padding: '6px 10px',
                   borderRadius: 999,
-                  border: '1px solid #cfcfcf',
+                  border:
+                    word.kind === 'deleted' || word.kind === 'replaced'
+                      ? '1px dashed #bbb'
+                      : word.kind === 'inserted'
+                        ? `1px solid ${
+                            word.origin === 'replace' ? '#d1a93a' : '#2e7d32'
+                          }`
+                        : '1px solid #cfcfcf',
                   background: isSelected(index)
                     ? 'rgba(100,108,255,0.16)'
-                    : '#fff',
+                    : word.kind === 'deleted'
+                      ? 'rgba(0,0,0,0.04)'
+                      : word.kind === 'replaced'
+                        ? 'rgba(255,193,7,0.12)'
+                        : word.kind === 'inserted'
+                          ? word.origin === 'replace'
+                            ? 'rgba(255,193,7,0.18)'
+                            : 'rgba(27,94,32,0.12)'
+                          : '#fff',
                   userSelect: 'none',
-                  cursor: 'pointer',
+                  cursor:
+                    word.kind === 'deleted' || word.kind === 'replaced'
+                      ? 'default'
+                      : 'pointer',
                   fontWeight: word.kind === 'inserted' ? 700 : 500,
+                  textDecoration:
+                    word.kind === 'deleted' || word.kind === 'replaced'
+                      ? 'line-through'
+                      : 'none',
+                  color:
+                    word.kind === 'deleted'
+                      ? '#666'
+                      : word.kind === 'replaced'
+                        ? '#8a6d3b'
+                        : 'inherit',
                 }}
                 title={
                   word.start != null && word.end != null
-                    ? `${word.start.toFixed(2)}s–${word.end.toFixed(2)}s`
-                    : 'Inserted word (no timestamps)'
+                    ? `${word.kind.toUpperCase()} ${word.start.toFixed(2)}s–${word.end.toFixed(2)}s`
+                    : word.kind === 'inserted'
+                      ? word.origin === 'replace'
+                        ? 'Inserted replacement (no timestamps)'
+                        : 'Inserted word (no timestamps)'
+                      : 'No timestamps'
                 }
               >
-                {word.kind === 'original' ? (
+                {word.tokenIds.length > 0 ? (
                   <>
                     <span data-token-id={word.tokenIds[0]}>
                       {word.wordText}
@@ -705,7 +803,25 @@ export function TranscriptEditor({
                     ))}
                   </>
                 ) : (
-                  <span>{word.wordText}</span>
+                  <>
+                    <span>{word.wordText}</span>
+                    {word.kind === 'inserted' && (
+                      <span
+                        style={{
+                          marginLeft: 6,
+                          padding: '2px 6px',
+                          borderRadius: 999,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#0d47a1',
+                          background: 'rgba(25,118,210,0.12)',
+                          border: '1px solid rgba(25,118,210,0.28)',
+                        }}
+                      >
+                        GEN
+                      </span>
+                    )}
+                  </>
                 )}
               </span>
             </Fragment>
