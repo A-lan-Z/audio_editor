@@ -1179,29 +1179,29 @@ Build main transcript editor component.
 ---
 
 #### T403: Render Transcript from Token List
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** Medium
 - **Dependencies:** T402
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-9, FR-11
 
 **Description:**
 Display transcript by rendering each token as a span.
 
 **Acceptance Criteria:**
-- [ ] Each token rendered as <span data-token-id={id}>{text}</span>
-- [ ] Tokens concatenated with appropriate spacing
-- [ ] Punctuation attached to previous word (no space before)
-- [ ] Preserves line breaks and paragraphs (if present)
-- [ ] Can reconstruct full text from tokens
-- [ ] Visual appearance matches plain text editor
+- [x] Each token rendered as <span data-token-id={id}>{text}</span>
+- [x] Tokens concatenated with appropriate spacing
+- [x] Punctuation attached to previous word (no space before)
+- [x] Preserves line breaks and paragraphs (if present)
+- [x] Can reconstruct full text from tokens
+- [x] Visual appearance matches plain text editor
 
 **Notes:**
 - Use data attributes to track token IDs
 - Handle edge cases: empty tokens, leading/trailing spaces
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

@@ -4,8 +4,9 @@ import type { Transcript, TranscriptToken } from '@/services/projects'
 
 type WordNode = {
   id: string
-  tokenId: string | null
-  text: string
+  tokenIds: string[]
+  wordText: string
+  punctuationTokens: Array<{ id: string; text: string }>
   start: number | null
   end: number | null
   kind: 'original' | 'inserted'
@@ -44,16 +45,26 @@ function clamp(value: number, min: number, max: number): number {
 
 function tokensToWords(tokens: TranscriptToken[]): WordNode[] {
   const words: WordNode[] = []
+  let lastWord: WordNode | null = null
   for (const token of tokens) {
-    if (token.type !== 'word') continue
-    words.push({
-      id: token.id,
-      tokenId: token.id,
-      text: token.text,
-      start: token.start,
-      end: token.end,
-      kind: 'original',
-    })
+    if (token.type === 'word') {
+      lastWord = {
+        id: token.id,
+        tokenIds: [token.id],
+        wordText: token.text,
+        punctuationTokens: [],
+        start: token.start,
+        end: token.end,
+        kind: 'original',
+      }
+      words.push(lastWord)
+      continue
+    }
+    if (token.type === 'punctuation') {
+      if (!lastWord) continue
+      lastWord.punctuationTokens.push({ id: token.id, text: token.text })
+      lastWord.tokenIds.push(token.id)
+    }
   }
   return words
 }
@@ -67,8 +78,10 @@ function selectionToOldTokens(
   const end = Math.max(selection.start, selection.end)
   const ids: string[] = []
   for (let index = start; index <= end; index += 1) {
-    const tokenId = words[index]?.tokenId
-    if (tokenId) ids.push(tokenId)
+    const node = words[index]
+    if (!node) continue
+    if (node.kind === 'inserted') continue
+    ids.push(...node.tokenIds)
   }
   return ids
 }
@@ -79,7 +92,9 @@ function computeCharOffset(words: WordNode[], cursorIndex: number): number {
   for (let index = 0; index < safe; index += 1) {
     const word = words[index]
     if (index > 0) offset += 1
-    offset += word.text.length
+    offset +=
+      `${word.wordText}${word.punctuationTokens.map((t) => t.text).join('')}`
+        .length
   }
   return offset
 }
@@ -222,8 +237,9 @@ export function TranscriptEditor({
 
     const inserted: WordNode[] = insertWords.map((word, index) => ({
       id: `ins-${Date.now()}-${cursorIndex}-${index}`,
-      tokenId: null,
-      text: word,
+      tokenIds: [],
+      wordText: word,
+      punctuationTokens: [],
       start: null,
       end: null,
       kind: 'inserted',
@@ -341,7 +357,11 @@ export function TranscriptEditor({
   }
 
   const debugText = useMemo(() => {
-    const text = words.map((w) => w.text).join(' ')
+    const text = words
+      .map(
+        (w) => `${w.wordText}${w.punctuationTokens.map((t) => t.text).join('')}`
+      )
+      .join(' ')
     return text
   }, [words])
 
@@ -371,7 +391,7 @@ export function TranscriptEditor({
           {words.map((word, index) => (
             <span
               key={word.id}
-              data-token-id={word.tokenId ?? undefined}
+              data-token-id={word.tokenIds[0] ?? undefined}
               onMouseDown={(event) => onWordMouseDown(index, event)}
               style={{
                 display: 'inline-flex',
@@ -392,7 +412,18 @@ export function TranscriptEditor({
                   : 'Inserted word (no timestamps)'
               }
             >
-              {word.text}
+              {word.kind === 'original' ? (
+                <>
+                  <span data-token-id={word.tokenIds[0]}>{word.wordText}</span>
+                  {word.punctuationTokens.map((token) => (
+                    <span key={token.id} data-token-id={token.id}>
+                      {token.text}
+                    </span>
+                  ))}
+                </>
+              ) : (
+                <span>{word.wordText}</span>
+              )}
             </span>
           ))}
           <span
@@ -437,8 +468,8 @@ export function TranscriptEditor({
           <div>charOffset: {computeCharOffset(words, cursorIndex)}</div>
           <div>
             tokenAtCursor:{' '}
-            {tokenAtCursor?.tokenId
-              ? `${tokenAtCursor.tokenId} (${tokenAtCursor.start?.toFixed(2)}–${tokenAtCursor.end?.toFixed(2)}s)`
+            {tokenAtCursor?.tokenIds?.[0]
+              ? `${tokenAtCursor.tokenIds[0]} (${tokenAtCursor.start?.toFixed(2)}–${tokenAtCursor.end?.toFixed(2)}s)`
               : 'null'}
           </div>
           <div>
