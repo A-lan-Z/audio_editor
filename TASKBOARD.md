@@ -108,11 +108,11 @@ audio_editor/
 ---
 
 #### T002: Set Up Python Backend Environment
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 0
 - **Complexity:** Low
 - **Dependencies:** T001
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-4
 
 **Description:**
@@ -130,7 +130,7 @@ Initialize Python virtual environment and create requirements.txt with initial d
 - Pin major versions to avoid breaking changes
 - Document activation command in README.md
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
