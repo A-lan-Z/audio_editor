@@ -732,30 +732,30 @@ Show upload progress bar and handle errors gracefully in UI.
 ---
 
 #### T210: Write Integration Tests for Upload
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Medium
 - **Dependencies:** T201-T205
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Testing standards
 
 **Description:**
 Create tests for complete upload workflow.
 
 **Acceptance Criteria:**
-- [ ] tests/backend/test_upload.py created
-- [ ] Test valid WAV upload
-- [ ] Test valid MP3 upload and conversion
-- [ ] Test file too long (>10 min) rejection
-- [ ] Test invalid format rejection
-- [ ] Test corrupt file handling
-- [ ] All tests passing
+- [x] tests/backend/test_upload.py created
+- [x] Test valid WAV upload
+- [x] Test valid MP3 upload and conversion
+- [x] Test file too long (>10 min) rejection
+- [x] Test invalid format rejection
+- [x] Test corrupt file handling
+- [x] All tests passing
 
 **Notes:**
-- Use pytest-httpx for API testing
-- Create sample audio fixtures (librosa can generate)
+- Use uvicorn subprocess + urllib for API testing (TestClient/httpx transport may hang in this environment)
+- Create sample audio fixtures (synthetic tone/silence)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
