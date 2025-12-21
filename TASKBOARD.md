@@ -544,11 +544,11 @@ Create pytest tests for ProjectManager and storage utilities.
 ### Phase 2: Audio Input & Validation
 
 #### T201: Implement Audio Upload Endpoint
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 2
 - **Complexity:** Medium
 - **Dependencies:** T105
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-3
 
 **Description:**
@@ -567,7 +567,7 @@ Create endpoint to receive audio file uploads.
 - Validate content-type before processing
 - Store as original filename initially, rename after validation
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

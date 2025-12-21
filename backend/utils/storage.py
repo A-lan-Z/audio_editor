@@ -48,6 +48,7 @@ def _ensure_project_dir(project_id: UUID) -> Path:
     try:
         project_dir.mkdir(parents=True, exist_ok=True)
         (project_dir / "voice_profile").mkdir(parents=True, exist_ok=True)
+        (project_dir / "uploads").mkdir(parents=True, exist_ok=True)
         transcript_path = project_dir / "transcript.json"
         if not transcript_path.exists():
             _atomic_write_json(
@@ -57,6 +58,11 @@ def _ensure_project_dir(project_id: UUID) -> Path:
     except OSError as exc:
         raise StorageError(f"Failed to create project directory: {exc}") from exc
     return project_dir
+
+
+def project_uploads_dir(project_id: UUID) -> Path:
+    project_dir = _ensure_project_dir(project_id)
+    return project_dir / "uploads"
 
 
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
