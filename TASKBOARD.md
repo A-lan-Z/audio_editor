@@ -353,11 +353,11 @@ Create Pydantic models for Project, Transcript, Token, EditOperation.
 ---
 
 #### T103: Create ProjectManager Service
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Medium
 - **Dependencies:** T102
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-1, FR-2
 
 **Description:**
@@ -374,7 +374,7 @@ Implement service class for project CRUD operations.
 - File-based persistence can be added later (T104)
 - Keep interface simple and testable
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
