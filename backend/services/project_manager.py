@@ -46,3 +46,7 @@ class ProjectManager:
             if project_id not in self._projects:
                 raise ProjectNotFound(project_id)
             del self._projects[project_id]
+
+    def list_projects(self) -> list[Project]:
+        with self._lock:
+            return list(self._projects.values())

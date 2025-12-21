@@ -407,11 +407,11 @@ Create utilities for saving/loading audio files and project metadata.
 ---
 
 #### T105: Create REST Endpoints for Projects
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Medium
 - **Dependencies:** T103, T104
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-1, FR-2
 
 **Description:**
@@ -429,7 +429,7 @@ Implement API endpoints for project creation and retrieval.
 - Keep response format consistent across endpoints
 - Use FastAPI dependency injection for ProjectManager
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

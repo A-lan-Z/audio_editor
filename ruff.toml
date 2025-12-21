@@ -10,4 +10,4 @@ ignore = [
 
 [lint.per-file-ignores]
 "tests/**" = ["ANN"]
-
+"backend/api/**" = ["B008"]
