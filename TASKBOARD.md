@@ -379,11 +379,11 @@ Implement service class for project CRUD operations.
 ---
 
 #### T104: Implement File Storage Utilities
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Medium
 - **Dependencies:** T103
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-2, NFR-6
 
 **Description:**
@@ -402,7 +402,7 @@ Create utilities for saving/loading audio files and project metadata.
 - Use json.dump/load for metadata
 - Validate file paths to prevent directory traversal
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
