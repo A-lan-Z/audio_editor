@@ -324,11 +324,11 @@ Create main FastAPI app with CORS, basic routing, and health check endpoint.
 ---
 
 #### T102: Implement Project Data Model
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 1
 - **Complexity:** Medium
 - **Dependencies:** T101
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-1, FR-2
 
 **Description:**
@@ -348,7 +348,7 @@ Create Pydantic models for Project, Transcript, Token, EditOperation.
 - Use datetime for timestamps (ISO 8601 format)
 - Token times in seconds (float)
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
