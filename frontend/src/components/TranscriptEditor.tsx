@@ -110,6 +110,23 @@ function getTokenAtCursor(
   return candidate
 }
 
+function getTokensInSelection(
+  words: WordNode[],
+  selection: SelectionRange | null
+): WordNode[] {
+  if (!selection) return []
+  const start = Math.min(selection.start, selection.end)
+  const end = Math.max(selection.start, selection.end)
+  const selected: WordNode[] = []
+  for (let index = start; index <= end; index += 1) {
+    const node = words[index]
+    if (!node) continue
+    if (node.kind === 'inserted') continue
+    selected.push(node)
+  }
+  return selected
+}
+
 export function TranscriptEditor({
   transcript,
   onOperationsChange,
@@ -143,6 +160,10 @@ export function TranscriptEditor({
 
   const selectedOldTokens = useMemo(
     () => selectionToOldTokens(words, selection),
+    [selection, words]
+  )
+  const selectedTokens = useMemo(
+    () => getTokensInSelection(words, selection),
     [selection, words]
   )
 
@@ -290,6 +311,14 @@ export function TranscriptEditor({
 
   function onKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
     const modifier = event.ctrlKey || event.metaKey
+    if (modifier && event.key.toLowerCase() === 'a') {
+      event.preventDefault()
+      if (words.length > 0) {
+        setSelection({ start: 0, end: words.length - 1 })
+        setCursorIndex(words.length)
+      }
+      return
+    }
     if (modifier && event.key.toLowerCase() === 'z') {
       event.preventDefault()
       if (event.shiftKey) {
@@ -327,7 +356,22 @@ export function TranscriptEditor({
       const delta = event.key === 'ArrowLeft' ? -1 : 1
       const next = clamp(cursorIndex + delta, 0, words.length)
       setCursorIndex(next)
-      clearSelection()
+      if (event.shiftKey) {
+        setSelection((prev) => {
+          if (words.length === 0) return null
+          if (!prev) {
+            const initial =
+              delta < 0
+                ? clamp(cursorIndex - 1, 0, words.length - 1)
+                : clamp(cursorIndex, 0, words.length - 1)
+            return { start: initial, end: initial }
+          }
+          const nextEnd = clamp(prev.end + delta, 0, words.length - 1)
+          return { start: prev.start, end: nextEnd }
+        })
+      } else {
+        clearSelection()
+      }
       return
     }
 
@@ -513,6 +557,16 @@ export function TranscriptEditor({
             {selection ? `${selection.start}..${selection.end}` : 'none'}{' '}
             (old_tokens:{' '}
             {selectedOldTokens.length ? selectedOldTokens.join(', ') : 'none'})
+          </div>
+          <div>
+            selectedTokens:{' '}
+            {selectedTokens.length
+              ? selectedTokens
+                  .map(
+                    (token) => `${token.tokenIds[0]}@${token.start?.toFixed(2)}`
+                  )
+                  .join(' ')
+              : 'none'}
           </div>
           <div>draft: {draft ? JSON.stringify(draft) : '""'}</div>
           <div>

@@ -1233,29 +1233,29 @@ Map cursor position in editor to corresponding token.
 ---
 
 #### T405: Add Text Selection to Token Range Mapping
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** High
 - **Dependencies:** T404
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-12
 
 **Description:**
 Map text selection to range of tokens.
 
 **Acceptance Criteria:**
-- [ ] Function: getTokensInSelection() -> Token[]
-- [ ] Returns all tokens fully or partially selected
-- [ ] Handles multi-line selections
-- [ ] Handles partial token selections (include if >50% selected)
-- [ ] Test with various selection scenarios
-- [ ] Works with keyboard selection (Shift+arrows) and mouse
+- [x] Function: getTokensInSelection() -> Token[]
+- [x] Returns all tokens fully or partially selected
+- [x] Handles multi-line selections
+- [x] Handles partial token selections (include if >50% selected)
+- [x] Test with various selection scenarios
+- [x] Works with keyboard selection (Shift+arrows) and mouse
 
 **Notes:**
 - Use Selection API getRangeAt()
 - Handle edge case: selection spans non-token text
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 
