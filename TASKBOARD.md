@@ -1206,29 +1206,29 @@ Display transcript by rendering each token as a span.
 ---
 
 #### T404: Implement Cursor Position to Token ID Mapping
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** High
 - **Dependencies:** T403
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-11
 
 **Description:**
 Map cursor position in editor to corresponding token.
 
 **Acceptance Criteria:**
-- [ ] Function: getTokenAtCursor(cursorPosition) -> Token | null
-- [ ] Works with contentEditable cursor position (Selection API)
-- [ ] Handles positions between tokens correctly
-- [ ] Handles start/end of document
-- [ ] Test with various cursor positions
-- [ ] Returns null if position is in inserted (non-token) text
+- [x] Function: getTokenAtCursor(cursorPosition) -> Token | null
+- [x] Works with contentEditable cursor position (Selection API)
+- [x] Handles positions between tokens correctly
+- [x] Handles start/end of document
+- [x] Test with various cursor positions
+- [x] Returns null if position is in inserted (non-token) text
 
 **Notes:**
 - Use window.getSelection() and Range API
 - Walk DOM tree to find token span at cursor
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

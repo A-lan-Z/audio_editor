@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Transcript, TranscriptToken } from '@/services/projects'
 
@@ -99,6 +99,17 @@ function computeCharOffset(words: WordNode[], cursorIndex: number): number {
   return offset
 }
 
+function getTokenAtCursor(
+  words: WordNode[],
+  cursorIndex: number
+): WordNode | null {
+  if (words.length === 0) return null
+  if (cursorIndex <= 0) return null
+  const candidate = words[clamp(cursorIndex - 1, 0, words.length - 1)]
+  if (!candidate || candidate.kind === 'inserted') return null
+  return candidate
+}
+
 export function TranscriptEditor({
   transcript,
   onOperationsChange,
@@ -136,9 +147,7 @@ export function TranscriptEditor({
   )
 
   const tokenAtCursor = useMemo(() => {
-    if (words.length === 0) return null
-    const index = clamp(cursorIndex - 1, 0, words.length - 1)
-    return words[index] ?? null
+    return getTokenAtCursor(words, cursorIndex)
   }, [cursorIndex, words])
 
   function focusEditor(): void {
@@ -389,63 +398,90 @@ export function TranscriptEditor({
           }}
         >
           {words.map((word, index) => (
+            <Fragment key={word.id}>
+              {index === cursorIndex && (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    padding: '6px 10px',
+                    borderRadius: 999,
+                    border: '1px dashed #bbb',
+                    background: draft ? 'rgba(27,94,32,0.08)' : 'transparent',
+                    color: draft ? '#1b5e20' : '#999',
+                    minWidth: 24,
+                    userSelect: 'none',
+                  }}
+                  title="Type to insert a word; press Space to commit"
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    focusEditor()
+                  }}
+                >
+                  {draft || '|'}
+                </span>
+              )}
+              <span
+                data-token-id={word.tokenIds[0] ?? undefined}
+                onMouseDown={(event) => onWordMouseDown(index, event)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '6px 10px',
+                  borderRadius: 999,
+                  border: '1px solid #cfcfcf',
+                  background: isSelected(index)
+                    ? 'rgba(100,108,255,0.16)'
+                    : '#fff',
+                  userSelect: 'none',
+                  cursor: 'pointer',
+                  fontWeight: word.kind === 'inserted' ? 700 : 500,
+                }}
+                title={
+                  word.start != null && word.end != null
+                    ? `${word.start.toFixed(2)}s–${word.end.toFixed(2)}s`
+                    : 'Inserted word (no timestamps)'
+                }
+              >
+                {word.kind === 'original' ? (
+                  <>
+                    <span data-token-id={word.tokenIds[0]}>
+                      {word.wordText}
+                    </span>
+                    {word.punctuationTokens.map((token) => (
+                      <span key={token.id} data-token-id={token.id}>
+                        {token.text}
+                      </span>
+                    ))}
+                  </>
+                ) : (
+                  <span>{word.wordText}</span>
+                )}
+              </span>
+            </Fragment>
+          ))}
+          {cursorIndex === words.length && (
             <span
-              key={word.id}
-              data-token-id={word.tokenIds[0] ?? undefined}
-              onMouseDown={(event) => onWordMouseDown(index, event)}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 padding: '6px 10px',
                 borderRadius: 999,
-                border: '1px solid #cfcfcf',
-                background: isSelected(index)
-                  ? 'rgba(100,108,255,0.16)'
-                  : '#fff',
+                border: '1px dashed #bbb',
+                background: draft ? 'rgba(27,94,32,0.08)' : 'transparent',
+                color: draft ? '#1b5e20' : '#999',
+                minWidth: 24,
                 userSelect: 'none',
-                cursor: 'pointer',
-                fontWeight: word.kind === 'inserted' ? 700 : 500,
               }}
-              title={
-                word.start != null && word.end != null
-                  ? `${word.start.toFixed(2)}s–${word.end.toFixed(2)}s`
-                  : 'Inserted word (no timestamps)'
-              }
+              title="Type to insert a word; press Space to commit"
+              onMouseDown={(event) => {
+                event.preventDefault()
+                focusEditor()
+              }}
             >
-              {word.kind === 'original' ? (
-                <>
-                  <span data-token-id={word.tokenIds[0]}>{word.wordText}</span>
-                  {word.punctuationTokens.map((token) => (
-                    <span key={token.id} data-token-id={token.id}>
-                      {token.text}
-                    </span>
-                  ))}
-                </>
-              ) : (
-                <span>{word.wordText}</span>
-              )}
+              {draft || '|'}
             </span>
-          ))}
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '6px 10px',
-              borderRadius: 999,
-              border: '1px dashed #bbb',
-              background: draft ? 'rgba(27,94,32,0.08)' : 'transparent',
-              color: draft ? '#1b5e20' : '#999',
-              minWidth: 24,
-              userSelect: 'none',
-            }}
-            title="Type to insert a word; press Space to commit"
-            onMouseDown={(event) => {
-              event.preventDefault()
-              focusEditor()
-            }}
-          >
-            {draft || '|'}
-          </span>
+          )}
         </div>
       </div>
 
