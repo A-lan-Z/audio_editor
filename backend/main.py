@@ -8,6 +8,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
+from backend.api.edits import router as edits_router
 from backend.api.projects import router as projects_router
 from backend.api.transcription import router as transcription_router
 from backend.api.upload import router as upload_router
@@ -41,6 +42,7 @@ def health() -> dict[str, str]:
 app.include_router(projects_router)
 app.include_router(upload_router)
 app.include_router(transcription_router)
+app.include_router(edits_router)
 app.add_middleware(MaxBodySizeMiddleware)
 
 

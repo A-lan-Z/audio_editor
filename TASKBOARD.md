@@ -1314,29 +1314,29 @@ Define data model for edit operations.
 ---
 
 #### T408: Add Edit Submission Endpoint
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 4
 - **Complexity:** Medium
 - **Dependencies:** T407
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-13
 
 **Description:**
 Create endpoint to submit edits to backend.
 
 **Acceptance Criteria:**
-- [ ] POST /api/projects/{id}/edit endpoint
-- [ ] Request body: EditOperation JSON
-- [ ] Validates edit operation
-- [ ] Updates project metadata with edit log
-- [ ] Returns updated transcript state
-- [ ] Test with curl/Postman
+- [x] POST /api/projects/{id}/edit endpoint
+- [x] Request body: EditOperation JSON
+- [x] Validates edit operation
+- [x] Updates project metadata with edit log
+- [x] Returns updated transcript state
+- [x] Test with curl/Postman
 
 **Notes:**
 - Edit operations are append-only (for undo support)
 - Backend maintains authoritative state
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
