@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from backend.models.project import Token, Transcript
+from backend.models.transcript import Token, Transcript
 from backend.services.transcription_service import TranscriptionService
 from backend.utils.asr_tokens import WordSpan, word_spans_to_tokens
 from backend.utils.errors import ValidationError

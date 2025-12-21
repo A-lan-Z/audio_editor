@@ -899,28 +899,28 @@ Extract precise word-level timestamps from ASR output.
 ---
 
 #### T306: Create Transcript Data Model
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3
 - **Complexity:** Low
 - **Dependencies:** T102, T305
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-7, FR-9
 
 **Description:**
 Define Transcript and Token models for structured data.
 
 **Acceptance Criteria:**
-- [ ] backend/models/transcript.py created
-- [ ] Token model: id (UUID), text (str), start (float), end (float), type (enum: word/punctuation/pause)
-- [ ] Transcript model: tokens (List[Token]), language (str), duration (float), created_at (datetime)
-- [ ] Methods: to_json(), from_json(), to_text()
-- [ ] Validation: timestamps valid, non-empty text
+- [x] backend/models/transcript.py created
+- [x] Token model: id (UUID), text (str), start (float), end (float), type (enum: word/punctuation/pause)
+- [x] Transcript model: tokens (List[Token]), language (str), duration (float), created_at (datetime)
+- [x] Methods: to_json(), from_json(), to_text()
+- [x] Validation: timestamps valid, non-empty text
 
 **Notes:**
 - Use Pydantic for validation
 - to_text() reconstructs plain text from tokens
 
-**Completed:** (date)
+**Completed:** 2025-12-21
 
 ---
 

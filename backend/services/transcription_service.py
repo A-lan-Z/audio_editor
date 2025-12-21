@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from backend.models.project import Token, Transcript
+from backend.models.transcript import Token, Transcript
 
 
 class TranscriptionService(ABC):
