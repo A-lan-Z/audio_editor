@@ -1457,28 +1457,28 @@ Comprehensive tests for editing logic.
 ### Phase 5: Text-Based Deletion → Audio Editing
 
 #### T501: Create AudioSegmentManager Service
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Medium
 - **Dependencies:** T306
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-14, FR-15
 
 **Description:**
 Service to manage audio segments and their states.
 
 **Acceptance Criteria:**
-- [ ] backend/services/audio_segment_manager.py created
-- [ ] AudioSegment model: id, source (original/generated), file_path, start, end, status (kept/removed)
-- [ ] Methods: get_all_segments, mark_removed, mark_kept, add_generated_segment
-- [ ] Maintains segment list in timeline order
-- [ ] Test segment operations
+- [x] backend/services/audio_segment_manager.py created
+- [x] AudioSegment model: id, source (original/generated), file_path, start, end, status (kept/removed)
+- [x] Methods: get_all_segments, mark_removed, mark_kept, add_generated_segment
+- [x] Maintains segment list in timeline order
+- [x] Test segment operations
 
 **Notes:**
 - Segments reference token IDs for mapping
 - Source "original" means from uploaded audio
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
