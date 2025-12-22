@@ -1297,11 +1297,11 @@ Add a small debug panel to the editor UI that can display refined timestamp data
 ---
 
 #### T358: Tests/Benchmarks for Boundary Correctness
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** Medium
 - **Dependencies:** T353, T355
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Testing standards
 
 **Description:**
@@ -1311,6 +1311,8 @@ Add unit/integration tests that detect “deleted content still audible” regre
 - [ ] Test: delete multi-word region removes corresponding audio content reliably
 - [ ] Test: rapid consecutive edits do not drop operations
 - [ ] Test: boundary snapping behaves deterministically on synthetic audio
+
+**Completed:** 2025-12-22
 
 ---
 
