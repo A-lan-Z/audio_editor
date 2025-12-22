@@ -1562,29 +1562,29 @@ Persist segment removal state in project data.
 ---
 
 #### T505: Create AudioRenderer Service
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** High
 - **Dependencies:** T501
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-15, FR-16
 
 **Description:**
 Service to assemble audio from segments for playback.
 
 **Acceptance Criteria:**
-- [ ] backend/services/audio_renderer.py created
-- [ ] Function: render(project_id) -> audio_array
-- [ ] Loads all segments with status=kept or status=generated
-- [ ] Concatenates in timeline order
-- [ ] Returns numpy array or audio file path
-- [ ] Test with sample segments
+- [x] backend/services/audio_renderer.py created
+- [x] Function: render(project_id) -> audio_array
+- [x] Loads all segments with status=kept or status=generated
+- [x] Concatenates in timeline order
+- [x] Returns numpy array or audio file path
+- [x] Test with sample segments
 
 **Notes:**
 - Use librosa or soundfile for audio loading
 - Output sample rate matches original
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
