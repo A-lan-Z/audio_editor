@@ -1509,29 +1509,29 @@ Mark segments as kept/removed/generated.
 ---
 
 #### T503: Add Deletion Handler
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Medium
 - **Dependencies:** T407, T502
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-14
 
 **Description:**
 Map deleted tokens to audio segments and mark as removed.
 
 **Acceptance Criteria:**
-- [ ] Function: handle_deletion(edit_operation) -> List[segment_ids]
-- [ ] Finds all segments corresponding to deleted token IDs
-- [ ] Marks those segments as removed
-- [ ] Updates project metadata
-- [ ] Returns list of affected segment IDs
-- [ ] Test with various deletion scenarios
+- [x] Function: handle_deletion(edit_operation) -> List[segment_ids]
+- [x] Finds all segments corresponding to deleted token IDs
+- [x] Marks those segments as removed
+- [x] Updates project metadata
+- [x] Returns list of affected segment IDs
+- [x] Test with various deletion scenarios
 
 **Notes:**
 - Multiple tokens may map to one segment or vice versa
 - Handle partial segment deletions (may need segment splitting)
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

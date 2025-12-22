@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from backend.models.edit_operation import EditOperation
 from backend.models.project import Project
 from backend.models.transcript import Token, Transcript
 
@@ -193,29 +194,15 @@ class AudioSegmentManager:
                 continue
         return segment_ids
 
-    def rebuild_from_active_edits(self, edits: list[dict[str, Any]]) -> None:
-        original_indices = [
-            idx
-            for idx, seg in enumerate(self._segments)
-            if seg.source == "original" and seg.status != "generated"
-        ]
-        for idx in original_indices:
-            self._segments[idx] = self._segments[idx].model_copy(
-                update={"status": "kept"}
-            )
+    def rebuild_from_active_edits(self, edits: list[EditOperation]) -> None:
+        for index, segment in enumerate(self._segments):
+            if segment.source != "original":
+                continue
+            if segment.status == "generated":
+                continue
+            self._segments[index] = segment.model_copy(update={"status": "kept"})
 
         for edit in edits:
-            if not isinstance(edit, dict):
+            if edit.type != "delete":
                 continue
-            if edit.get("type") != "delete":
-                continue
-            raw_ids = edit.get("old_tokens")
-            if not isinstance(raw_ids, list):
-                continue
-            token_ids: list[UUID] = []
-            for item in raw_ids:
-                try:
-                    token_ids.append(UUID(str(item)))
-                except ValueError:
-                    continue
-            self.mark_removed_for_token_ids(token_ids)
+            self.mark_removed_for_token_ids(edit.old_tokens)

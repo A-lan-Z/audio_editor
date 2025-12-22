@@ -9,6 +9,7 @@ from fastapi import APIRouter, status
 from backend.models.edit_operation import EditOperation
 from backend.models.project import Project
 from backend.models.transcript import Transcript
+from backend.services.deletion_handler import sync_deleted_segments_for_active_edits
 from backend.utils.errors import ProjectNotFound, ValidationError
 from backend.utils.storage import (
     StorageError,
@@ -103,6 +104,12 @@ def submit_edit(project_id: UUID, operation: EditOperation) -> Transcript:
     updated = _rebuild_from_original(original_transcript, project.edits[:cursor])
     saved_path = save_transcript(project_id, updated)
 
+    sync_deleted_segments_for_active_edits(
+        project=project,
+        original_transcript=original_transcript,
+        active_edits=project.edits[:cursor],
+    )
+
     project.updated_at = datetime.now(UTC)
     project.metadata["transcript_path"] = str(saved_path)
     save_project_metadata(project)
@@ -135,6 +142,12 @@ def undo_edit(project_id: UUID) -> Transcript:
     updated = _rebuild_from_original(original_transcript, project.edits[:cursor])
     saved_path = save_transcript(project_id, updated)
 
+    sync_deleted_segments_for_active_edits(
+        project=project,
+        original_transcript=original_transcript,
+        active_edits=project.edits[:cursor],
+    )
+
     project.updated_at = datetime.now(UTC)
     project.metadata["transcript_path"] = str(saved_path)
     save_project_metadata(project)
@@ -166,6 +179,12 @@ def redo_edit(project_id: UUID) -> Transcript:
 
     updated = _rebuild_from_original(original_transcript, project.edits[:cursor])
     saved_path = save_transcript(project_id, updated)
+
+    sync_deleted_segments_for_active_edits(
+        project=project,
+        original_transcript=original_transcript,
+        active_edits=project.edits[:cursor],
+    )
 
     project.updated_at = datetime.now(UTC)
     project.metadata["transcript_path"] = str(saved_path)
