@@ -1643,29 +1643,29 @@ Apply short cross-fade to avoid clicks at boundaries.
 ---
 
 #### T508: Create Playback Preview Endpoint
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Medium
 - **Dependencies:** T505, T507
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-15
 
 **Description:**
 Endpoint to stream assembled audio for preview.
 
 **Acceptance Criteria:**
-- [ ] GET /api/projects/{id}/preview endpoint
-- [ ] Renders audio with AudioRenderer
-- [ ] Returns audio file (WAV) for streaming
-- [ ] Generates on-demand (no permanent file yet)
-- [ ] Handles large audio efficiently (streaming or chunked)
-- [ ] Test with curl or browser
+- [x] GET /api/projects/{id}/preview endpoint
+- [x] Renders audio with AudioRenderer
+- [x] Returns audio file (WAV) for streaming
+- [x] Generates on-demand (no permanent file yet)
+- [x] Handles large audio efficiently (streaming or chunked)
+- [x] Test with curl or browser
 
 **Notes:**
 - Use FastAPI's StreamingResponse
 - Consider caching rendered audio temporarily
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
