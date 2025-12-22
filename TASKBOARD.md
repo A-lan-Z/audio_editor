@@ -1277,11 +1277,11 @@ Expose debugging information for refined timestamp mapping so users can validate
 ---
 
 #### T357: Frontend Debug UI for Timestamp Mapping
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** Medium
 - **Dependencies:** T356
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-9
 
 **Description:**
@@ -1291,6 +1291,8 @@ Add a small debug panel to the editor UI that can display refined timestamp data
 - [ ] Displays token start/end (refined) on hover/selection
 - [ ] Shows deletion cut boundaries (before/after snapping) for selected region
 - [ ] Can copy/download diagnostics JSON
+
+**Completed:** 2025-12-22
 
 ---
 

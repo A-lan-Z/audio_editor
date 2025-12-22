@@ -1,11 +1,15 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
+  getTimestampDiagnostics,
   redoEdit,
   submitEditOperation,
   undoEdit,
   type EditOperationPayload,
   type Transcript,
+  type TimestampDiagnosticsBoundaryTrim,
+  type TimestampDiagnosticsResponse,
+  type TimestampDiagnosticsToken,
   type TranscriptToken,
 } from '@/services/projects'
 
@@ -209,6 +213,14 @@ export function TranscriptEditor({
 }): JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const previewAudioRef = useRef<HTMLAudioElement | null>(null)
+
+  const [hoveredTokenId, setHoveredTokenId] = useState<string | null>(null)
+  const [timestampDiagnostics, setTimestampDiagnostics] =
+    useState<TimestampDiagnosticsResponse | null>(null)
+  const [timestampDiagnosticsStatus, setTimestampDiagnosticsStatus] = useState<{
+    status: 'idle' | 'loading' | 'ok' | 'error'
+    detail: string | null
+  }>({ status: 'idle', detail: null })
 
   const initialWords = useMemo(
     () => tokensToWords(transcript.tokens),
@@ -661,6 +673,92 @@ export function TranscriptEditor({
     return text
   }, [words])
 
+  const diagnosticsTokenById = useMemo(() => {
+    const map = new Map<string, TimestampDiagnosticsToken>()
+    for (const token of timestampDiagnostics?.tokens ?? []) {
+      map.set(token.id, token)
+    }
+    return map
+  }, [timestampDiagnostics])
+
+  const activeDiagnosticsTokenId = useMemo(() => {
+    if (hoveredTokenId) return hoveredTokenId
+    if (tokenAtCursor?.tokenIds?.[0]) return tokenAtCursor.tokenIds[0]
+    if (selectedTokens[0]?.tokenIds?.[0]) return selectedTokens[0].tokenIds[0]
+    return null
+  }, [hoveredTokenId, selectedTokens, tokenAtCursor])
+
+  const activeDiagnosticsToken = activeDiagnosticsTokenId
+    ? diagnosticsTokenById.get(activeDiagnosticsTokenId) ?? null
+    : null
+
+  const matchingBoundaryTrims = useMemo(() => {
+    const trims: TimestampDiagnosticsBoundaryTrim[] =
+      timestampDiagnostics?.boundary_trims ?? []
+    if (!trims.length) return []
+
+    const relevant = new Set<string>()
+    for (const token of selectedTokens) {
+      if (token.tokenIds[0]) relevant.add(token.tokenIds[0])
+    }
+    if (tokenAtCursor?.tokenIds?.[0]) relevant.add(tokenAtCursor.tokenIds[0])
+    if (hoveredTokenId) relevant.add(hoveredTokenId)
+    if (!relevant.size) return trims.slice(0, 8)
+
+    return trims
+      .filter(
+        (trim) =>
+          relevant.has(trim.prev_segment_id) || relevant.has(trim.next_segment_id)
+      )
+      .slice(0, 8)
+  }, [hoveredTokenId, selectedTokens, timestampDiagnostics, tokenAtCursor])
+
+  async function loadTimestampDiagnostics(): Promise<void> {
+    if (!projectId) return
+    setTimestampDiagnosticsStatus({ status: 'loading', detail: null })
+    try {
+      const data = await getTimestampDiagnostics(projectId)
+      setTimestampDiagnostics(data)
+      setTimestampDiagnosticsStatus({ status: 'ok', detail: null })
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch diagnostics'
+      setTimestampDiagnosticsStatus({ status: 'error', detail: message })
+    }
+  }
+
+  async function copyDiagnosticsJson(): Promise<void> {
+    if (!timestampDiagnostics) return
+    const text = JSON.stringify(timestampDiagnostics, null, 2)
+    try {
+      await navigator.clipboard.writeText(text)
+      setTimestampDiagnosticsStatus({ status: 'ok', detail: 'Copied diagnostics JSON' })
+    } catch {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-9999px'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+      setTimestampDiagnosticsStatus({ status: 'ok', detail: 'Copied diagnostics JSON' })
+    }
+  }
+
+  function downloadDiagnosticsJson(): void {
+    if (!timestampDiagnostics) return
+    const blob = new Blob([JSON.stringify(timestampDiagnostics, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${projectId ?? 'project'}-diagnostics.json`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div style={{ maxWidth: 900, margin: '24px auto 0' }}>
       <h2>Transcript editor</h2>
@@ -802,6 +900,14 @@ export function TranscriptEditor({
               <span
                 data-token-id={word.tokenIds[0] ?? undefined}
                 onMouseDown={(event) => onWordMouseDown(index, event)}
+                onMouseEnter={() => {
+                  if (word.tokenIds[0]) setHoveredTokenId(word.tokenIds[0])
+                }}
+                onMouseLeave={() => {
+                  if (word.tokenIds[0] && hoveredTokenId === word.tokenIds[0]) {
+                    setHoveredTokenId(null)
+                  }
+                }}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -938,12 +1044,117 @@ export function TranscriptEditor({
         }}
       >
         <div style={{ fontWeight: 700, marginBottom: 8 }}>Debug</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            disabled={!projectId || timestampDiagnosticsStatus.status === 'loading'}
+            onClick={() => {
+              void loadTimestampDiagnostics()
+            }}
+          >
+            {timestampDiagnosticsStatus.status === 'loading'
+              ? 'Loading diagnostics...'
+              : 'Load timestamp diagnostics'}
+          </button>
+          <button
+            type="button"
+            disabled={!timestampDiagnostics}
+            onClick={() => {
+              void copyDiagnosticsJson()
+            }}
+          >
+            Copy JSON
+          </button>
+          <button
+            type="button"
+            disabled={!timestampDiagnostics}
+            onClick={() => {
+              downloadDiagnosticsJson()
+            }}
+          >
+            Download JSON
+          </button>
+          <div style={{ fontSize: 12, color: '#555', alignSelf: 'center' }}>
+            {timestampDiagnosticsStatus.detail
+              ? timestampDiagnosticsStatus.detail
+              : timestampDiagnostics
+                ? `loaded @ ${timestampDiagnostics.computed_at}`
+                : 'not loaded'}
+          </div>
+        </div>
         <div
           style={{
+            marginTop: 10,
             fontSize: 12,
             fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
           }}
         >
+          {timestampDiagnostics && (
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>
+                Timestamp mapping
+              </div>
+              <div>
+                active_source:{' '}
+                {timestampDiagnostics.transcript_active_source ?? 'unknown'} refine:
+                {timestampDiagnostics.refinement_enabled ? 'on' : 'off'} window:
+                {timestampDiagnostics.snap_window_ms}ms padding:
+                {timestampDiagnostics.cut_padding_ms}ms
+              </div>
+              <div>
+                activeToken:{' '}
+                {activeDiagnosticsTokenId ? activeDiagnosticsTokenId : 'none'}
+              </div>
+              {activeDiagnosticsToken ? (
+                <div style={{ marginTop: 6 }}>
+                  <div>
+                    text: {JSON.stringify(activeDiagnosticsToken.text)} type:{' '}
+                    {activeDiagnosticsToken.type}
+                  </div>
+                  <div>
+                    active: {activeDiagnosticsToken.active_start.toFixed(3)}–
+                    {activeDiagnosticsToken.active_end.toFixed(3)}s
+                  </div>
+                  <div>
+                    asr:{' '}
+                    {activeDiagnosticsToken.asr_start != null &&
+                    activeDiagnosticsToken.asr_end != null
+                      ? `${activeDiagnosticsToken.asr_start.toFixed(3)}–${activeDiagnosticsToken.asr_end.toFixed(3)}s (Δ ${activeDiagnosticsToken.delta_asr_start?.toFixed(3) ?? 'n/a'} / ${activeDiagnosticsToken.delta_asr_end?.toFixed(3) ?? 'n/a'})`
+                      : 'n/a'}
+                  </div>
+                  <div>
+                    refined:{' '}
+                    {activeDiagnosticsToken.refined_start != null &&
+                    activeDiagnosticsToken.refined_end != null
+                      ? `${activeDiagnosticsToken.refined_start.toFixed(3)}–${activeDiagnosticsToken.refined_end.toFixed(3)}s (Δ ${activeDiagnosticsToken.delta_refined_start?.toFixed(3) ?? 'n/a'} / ${activeDiagnosticsToken.delta_refined_end?.toFixed(3) ?? 'n/a'})`
+                      : 'n/a'}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginTop: 6, color: '#666' }}>
+                  Hover/select a word to see per-token timings.
+                </div>
+              )}
+              <div style={{ marginTop: 10, fontWeight: 700 }}>
+                Boundary trims (hover/selection)
+              </div>
+              {matchingBoundaryTrims.length ? (
+                matchingBoundaryTrims.map((trim) => (
+                  <div key={`${trim.prev_segment_id}-${trim.next_segment_id}`}>
+                    {trim.prev_segment_id} → {trim.next_segment_id} prev_end{' '}
+                    {trim.prev_end_before.toFixed(3)}→
+                    {trim.prev_end_trimmed.toFixed(3)} next_start{' '}
+                    {trim.next_start_before.toFixed(3)}→
+                    {trim.next_start_trimmed.toFixed(3)}
+                  </div>
+                ))
+              ) : (
+                <div style={{ color: '#666' }}>
+                  No boundary trims computed for current selection.
+                </div>
+              )}
+            </div>
+          )}
           <div>cursorIndex: {cursorIndex}</div>
           <div>charOffset: {computeCharOffset(words, cursorIndex)}</div>
           <div>

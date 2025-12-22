@@ -294,3 +294,73 @@ export async function redoEdit(projectId: string): Promise<Transcript> {
 
   return data as Transcript
 }
+
+export type TimestampDiagnosticsToken = {
+  id: string
+  text: string
+  type: string
+  active_start: number
+  active_end: number
+  asr_start?: number | null
+  asr_end?: number | null
+  refined_start?: number | null
+  refined_end?: number | null
+  delta_asr_start?: number | null
+  delta_asr_end?: number | null
+  delta_refined_start?: number | null
+  delta_refined_end?: number | null
+}
+
+export type TimestampDiagnosticsSegment = {
+  id: string
+  source: string
+  status: string
+  start: number
+  end: number
+  token_ids: string[]
+}
+
+export type TimestampDiagnosticsBoundaryTrim = {
+  prev_segment_id: string
+  next_segment_id: string
+  prev_end_before: number
+  prev_end_snapped: number
+  prev_end_trimmed: number
+  next_start_before: number
+  next_start_snapped: number
+  next_start_trimmed: number
+}
+
+export type TimestampDiagnosticsResponse = {
+  project_id: string
+  computed_at: string
+  transcript_active_source?: string | null
+  refinement_enabled: boolean
+  snap_window_ms: number
+  cut_padding_ms: number
+  tokens: TimestampDiagnosticsToken[]
+  segments: TimestampDiagnosticsSegment[]
+  boundary_trims: TimestampDiagnosticsBoundaryTrim[]
+}
+
+export async function getTimestampDiagnostics(
+  projectId: string
+): Promise<TimestampDiagnosticsResponse> {
+  const response = await fetch(`/api/projects/${projectId}/diagnostics/timestamps`, {
+    method: 'GET',
+  })
+  const data = (await response.json()) as unknown
+
+  if (!response.ok) {
+    if (
+      typeof data === 'object' &&
+      data !== null &&
+      'detail' in data &&
+      typeof (data as { detail: unknown }).detail === 'string'
+    ) {
+      throw new Error((data as { detail: string }).detail)
+    }
+    throw new Error(`Failed to fetch diagnostics (${response.status})`)
+  }
+  return data as TimestampDiagnosticsResponse
+}
