@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Literal
-from uuid import UUID
+from uuid import UUID, uuid5
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -11,6 +11,9 @@ from backend.models.transcript import Token, Transcript
 
 SegmentSource = Literal["original", "generated"]
 SegmentStatus = Literal["kept", "removed", "generated"]
+
+SEGMENTS_VERSION_WITH_GAPS = 2
+_GAP_SEGMENT_NAMESPACE = UUID("7bdc0dc2-3c2d-4e9b-8f35-c52c2940c3fa")
 
 
 class AudioSegment(BaseModel):
@@ -82,6 +85,59 @@ def _group_tokens_for_segments(tokens: list[Token]) -> list[AudioSegment]:
     return segments
 
 
+def _insert_gap_segments(segments: list[AudioSegment]) -> list[AudioSegment]:
+    if len(segments) < 2:
+        return list(segments)
+
+    out: list[AudioSegment] = [segments[0]]
+    for segment in segments[1:]:
+        previous = out[-1]
+        gap_start = float(previous.end)
+        gap_end = float(segment.start)
+        if gap_end > gap_start:
+            gap_id = uuid5(_GAP_SEGMENT_NAMESPACE, f"{previous.id}:{segment.id}")
+            out.append(
+                AudioSegment(
+                    id=gap_id,
+                    source="original",
+                    file_path="",
+                    start=gap_start,
+                    end=gap_end,
+                    status="kept",
+                    token_ids=[previous.id, segment.id],
+                )
+            )
+        out.append(segment)
+    out.sort(key=lambda seg: (seg.start, seg.end, str(seg.id)))
+    return out
+
+
+def _apply_statuses(
+    *,
+    segments: list[AudioSegment],
+    existing_by_id: dict[UUID, AudioSegment],
+) -> list[AudioSegment]:
+    out: list[AudioSegment] = []
+    for segment in segments:
+        existing = existing_by_id.get(segment.id)
+        if existing is not None:
+            out.append(segment.model_copy(update={"status": existing.status}))
+            continue
+
+        if segment.token_ids:
+            removed = any(
+                existing_by_id.get(token_id, None) is not None
+                and existing_by_id[token_id].status == "removed"
+                for token_id in segment.token_ids
+            )
+            if removed:
+                out.append(segment.model_copy(update={"status": "removed"}))
+                continue
+
+        out.append(segment)
+    return out
+
+
 class AudioSegmentManager:
     def __init__(self, segments: list[AudioSegment]) -> None:
         self._segments = segments
@@ -104,15 +160,28 @@ class AudioSegmentManager:
         cls, *, project: Project, transcript: Transcript
     ) -> AudioSegmentManager:
         manager = cls.from_project(project)
-        if manager._segments:
+        segments_version = project.metadata.get("segments_version")
+        if (
+            manager._segments
+            and isinstance(segments_version, int)
+            and segments_version >= SEGMENTS_VERSION_WITH_GAPS
+        ):
             return manager
 
-        segments = _group_tokens_for_segments(transcript.tokens)
+        existing_by_id = {segment.id: segment for segment in manager._segments}
+        base_segments = _group_tokens_for_segments(transcript.tokens)
+        segments = _insert_gap_segments(base_segments)
+        if existing_by_id:
+            segments = _apply_statuses(segments=segments, existing_by_id=existing_by_id)
+            segments.extend(
+                segment for segment in manager._segments if segment.source == "generated"
+            )
         audio_path = project.audio_path
         if not audio_path:
             raise ValueError("Project audio_path is required to initialize segments")
         for segment in segments:
-            segment.file_path = audio_path
+            if segment.source == "original":
+                segment.file_path = audio_path
 
         manager = cls(segments)
         manager.persist(project)
@@ -122,6 +191,7 @@ class AudioSegmentManager:
         project.metadata["segments"] = [
             seg.model_dump(mode="json") for seg in self._segments
         ]
+        project.metadata["segments_version"] = SEGMENTS_VERSION_WITH_GAPS
 
     def get_all_segments(self) -> list[AudioSegment]:
         return list(self._segments)

@@ -1237,12 +1237,12 @@ Persist multiple transcript artifacts to support reproducibility and debugging (
 ---
 
 #### T355: Segment Initialization Uses Refined Boundaries (Optional)
-- **Status:** Not Started
-- **Phase:** 3.5
-- **Complexity:** Medium
-- **Dependencies:** T353, T354
-- **Agent:**
-- **Requirements:** FR-14, FR-15
+- **Status:** Done
+ - **Phase:** 3.5
+ - **Complexity:** Medium
+ - **Dependencies:** T353, T354
+- **Agent:** GPT-5.2 (Codex CLI)
+ - **Requirements:** FR-14, FR-15
 
 **Description:**
 Ensure segment generation/initialization can use refined boundaries (and optional explicit pause/silence segments) so playback/export reflect refined timing.
@@ -1251,6 +1251,8 @@ Ensure segment generation/initialization can use refined boundaries (and optiona
 - [ ] AudioSegmentManager can initialize segments from refined transcript output
 - [ ] Supports explicit pause/silence segments when available
 - [ ] Does not reintroduce deleted content via gaps/segments
+
+**Completed:** 2025-12-22
 
 ---
 

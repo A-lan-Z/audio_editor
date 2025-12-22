@@ -47,6 +47,45 @@ def test_segment_manager_initializes_from_transcript() -> None:
     assert [seg.id for seg in loaded] == [hello_id, world_id]
 
 
+def test_segment_manager_inserts_gap_segments_and_removes_with_deletion() -> None:
+    first_id = UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+    second_id = UUID("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+    transcript = Transcript(
+        tokens=[
+            Token(id=first_id, text="First", start=0.0, end=0.25, type="word"),
+            Token(id=second_id, text="Second", start=0.5, end=0.75, type="word"),
+        ],
+        language="en",
+        duration=0.75,
+    )
+    project = Project(audio_path="/tmp/original.wav", metadata={})
+    manager = AudioSegmentManager.ensure_initialized(
+        project=project, transcript=transcript
+    )
+    segments = manager.get_all_segments()
+
+    assert len(segments) == 3
+    gap = next(seg for seg in segments if seg.start == 0.25 and seg.end == 0.5)
+    assert gap.source == "original"
+    assert gap.token_ids == [first_id, second_id]
+
+    delete_op = EditOperation(
+        type="delete",
+        position=0,
+        old_tokens=[first_id],
+        new_text="",
+    )
+    handle_deletion(
+        edit_operation=delete_op,
+        project=project,
+        original_transcript=transcript,
+    )
+    updated = {seg.start: seg for seg in AudioSegmentManager.from_project(project).get_all_segments()}
+    assert updated[0.0].status == "removed"
+    assert updated[0.25].status == "removed"
+    assert updated[0.5].status == "kept"
+
+
 def test_segment_marking_persists_to_metadata() -> None:
     hello_id = UUID("11111111-1111-1111-1111-111111111111")
     comma_id = UUID("22222222-2222-2222-2222-222222222222")
@@ -356,6 +395,69 @@ def test_audio_renderer_does_not_include_gaps_around_removed_segments(
         [
             original[: int(sample_rate * 0.25)],
             original[int(sample_rate * 0.5) : int(sample_rate * 0.75)],
+        ],
+        sample_rate=sample_rate,
+        crossfade_ms=10.0,
+    )
+    assert rendered.shape == expected.shape
+    assert np.allclose(rendered, expected, atol=1e-3)
+
+
+def test_audio_renderer_does_not_include_gap_after_removed_segment(
+    tmp_path: object, monkeypatch: object
+) -> None:
+    monkeypatch.setenv("TEXTAUDIO_PROJECTS_DIR", str(tmp_path / "projects"))
+    monkeypatch.setenv("TEXTAUDIO_CROSSFADE_MS", "10")
+
+    project = Project(metadata={})
+    audio_path = project_original_wav_path(project.id)
+    project.audio_path = str(audio_path)
+
+    sample_rate = 1_000
+    original = np.zeros((sample_rate,), dtype=np.float32)
+    original[: int(sample_rate * 0.25)] = 0.2
+    original[int(sample_rate * 0.25) : int(sample_rate * 0.5)] = 0.9
+    original[int(sample_rate * 0.5) : int(sample_rate * 0.6)] = 0.7
+    original[int(sample_rate * 0.6) : int(sample_rate * 0.75)] = 0.4
+    sf.write(audio_path, original, sample_rate, subtype="PCM_16")
+
+    project.metadata["segments"] = [
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.0,
+            "end": 0.25,
+            "status": "kept",
+            "token_ids": [],
+        },
+        {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.25,
+            "end": 0.5,
+            "status": "removed",
+            "token_ids": [],
+        },
+        {
+            "id": "33333333-3333-3333-3333-333333333333",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.6,
+            "end": 0.75,
+            "status": "kept",
+            "token_ids": [],
+        },
+    ]
+    save_project_metadata(project)
+
+    rendered, rendered_rate = render(project.id)
+    assert rendered_rate == sample_rate
+    expected = _crossfade_concatenate(
+        [
+            original[: int(sample_rate * 0.25)],
+            original[int(sample_rate * 0.6) : int(sample_rate * 0.75)],
         ],
         sample_rate=sample_rate,
         crossfade_ms=10.0,

@@ -164,6 +164,9 @@ def render(project_id: UUID) -> tuple[np.ndarray, int]:
     if not segments:
         segments = [_default_segment(project, original_audio, sample_rate)]
 
+    segments_version = project.metadata.get("segments_version")
+    use_implicit_gaps = not (isinstance(segments_version, int) and segments_version >= 2)
+
     segments.sort(key=lambda seg: (seg.start, seg.end, str(seg.id)))
     chunks: list[np.ndarray] = []
     cursor = 0.0
@@ -176,10 +179,12 @@ def render(project_id: UUID) -> tuple[np.ndarray, int]:
         end = float(segment.end)
         include_segment = segment.status in {"kept", "generated"}
         include_gap = (
-            start > cursor
+            use_implicit_gaps
+            and start > cursor
             and previous_included_original
             and include_segment
             and segment.source == "original"
+            and not removed_since_last_original
         )
 
         if segment.source == "original" and segment.status == "removed":
