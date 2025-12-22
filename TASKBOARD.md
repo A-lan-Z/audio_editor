@@ -39,17 +39,17 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 2: Audio Input | 8 | 0 | 0 | 0 | 0 | 8 |
 | 3: Transcription | 13 | 0 | 0 | 0 | 0 | 13 |
 | 4: Text Editor | 12 | 0 | 0 | 0 | 0 | 12 |
-| 5: Audio Deletion | 11 | 11 | 0 | 0 | 0 | 0 |
+| 5: Audio Deletion | 11 | 0 | 0 | 0 | 0 | 11 |
 | 6: Voice/TTS | 17 | 17 | 0 | 0 | 0 | 0 |
 | 7: Pause Adjust | 10 | 10 | 0 | 0 | 0 | 0 |
 | 8: Playback | 11 | 11 | 0 | 0 | 0 | 0 |
 | 9: Export | 13 | 13 | 0 | 0 | 0 | 0 |
 | 10: Polish | 15 | 15 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **127** | **77** | **0** | **0** | **0** | **50** |
+| **TOTAL** | **127** | **66** | **0** | **0** | **0** | **61** |
 
 **Last Updated:** 2025-12-22
-**Current Phase:** 5 (Not Started)
-**Next Task:** T501
+**Current Phase:** 6 (Not Started)
+**Next Task:** T601
 
 ---
 
