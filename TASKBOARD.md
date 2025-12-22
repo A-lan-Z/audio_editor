@@ -1696,29 +1696,29 @@ Update UI to show deleted text visually.
 ---
 
 #### T510: Frontend - Add Preview Edit Button
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Low
 - **Dependencies:** T508
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-15
 
 **Description:**
 Button to preview edited audio before exporting.
 
 **Acceptance Criteria:**
-- [ ] "Preview Edited Audio" button in UI
-- [ ] Button triggers GET /api/projects/{id}/preview
-- [ ] Plays returned audio in browser
-- [ ] Shows loading state while rendering
-- [ ] Handles errors (e.g., no edits made)
-- [ ] Test preview functionality
+- [x] "Preview Edited Audio" button in UI
+- [x] Button triggers GET /api/projects/{id}/preview
+- [x] Plays returned audio in browser
+- [x] Shows loading state while rendering
+- [x] Handles errors (e.g., no edits made)
+- [x] Test preview functionality
 
 **Notes:**
 - Use HTML5 audio element
 - Provide visual feedback (playing indicator)
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

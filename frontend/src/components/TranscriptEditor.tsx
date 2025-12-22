@@ -208,6 +208,7 @@ export function TranscriptEditor({
   onOperationsChange?: (operations: EditOperationPayload[]) => void
 }): JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null)
 
   const initialWords = useMemo(
     () => tokensToWords(transcript.tokens),
@@ -230,6 +231,17 @@ export function TranscriptEditor({
     status: 'idle' | 'syncing' | 'ok' | 'error'
     detail: string | null
   }>({ status: 'idle', detail: null })
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewStatus, setPreviewStatus] = useState<{
+    status: 'idle' | 'loading' | 'error'
+    detail: string | null
+  }>({ status: 'idle', detail: null })
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   useEffect(() => {
     onOperationsChange?.(operations)
@@ -675,7 +687,49 @@ export function TranscriptEditor({
         >
           Redo
         </button>
+        <button
+          type="button"
+          disabled={!projectId || previewStatus.status === 'loading'}
+          onClick={async () => {
+            if (!projectId) return
+            setPreviewStatus({ status: 'loading', detail: null })
+            try {
+              const response = await fetch(`/api/projects/${projectId}/preview`)
+              if (!response.ok) {
+                throw new Error(`Preview failed (${response.status})`)
+              }
+              const blob = await response.blob()
+              const nextUrl = URL.createObjectURL(blob)
+              setPreviewUrl((prev) => {
+                if (prev) URL.revokeObjectURL(prev)
+                return nextUrl
+              })
+              setPreviewStatus({ status: 'idle', detail: null })
+              setTimeout(() => {
+                void previewAudioRef.current?.play().catch(() => {})
+              }, 0)
+            } catch (error) {
+              const message =
+                error instanceof Error ? error.message : 'Preview failed'
+              setPreviewStatus({ status: 'error', detail: message })
+            }
+          }}
+        >
+          {previewStatus.status === 'loading'
+            ? 'Rendering Preview...'
+            : 'Preview Edited Audio'}
+        </button>
       </div>
+      {previewStatus.status === 'error' && previewStatus.detail && (
+        <div style={{ color: '#b71c1c', marginBottom: 12 }}>
+          {previewStatus.detail}
+        </div>
+      )}
+      {previewUrl && (
+        <div style={{ marginBottom: 12 }}>
+          <audio ref={previewAudioRef} controls src={previewUrl} />
+        </div>
+      )}
       <div
         ref={containerRef}
         tabIndex={0}
