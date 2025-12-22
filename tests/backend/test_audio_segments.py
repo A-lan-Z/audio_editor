@@ -193,6 +193,7 @@ def test_audio_renderer_concatenates_three_segments(
     tmp_path: object, monkeypatch: object
 ) -> None:
     monkeypatch.setenv("TEXTAUDIO_PROJECTS_DIR", str(tmp_path / "projects"))
+    monkeypatch.setenv("TEXTAUDIO_CROSSFADE_MS", "10")
 
     project = Project(metadata={})
     audio_path = project_original_wav_path(project.id)
@@ -235,14 +236,24 @@ def test_audio_renderer_concatenates_three_segments(
 
     rendered, rendered_rate = render(project.id)
     assert rendered_rate == sample_rate
-    assert rendered.shape == (int(sample_rate * 0.75),)
-    assert np.allclose(rendered, original[: int(sample_rate * 0.75)], atol=1e-3)
+    expected = _crossfade_concatenate(
+        [
+            original[: int(sample_rate * 0.25)],
+            original[int(sample_rate * 0.25) : int(sample_rate * 0.5)],
+            original[int(sample_rate * 0.5) : int(sample_rate * 0.75)],
+        ],
+        sample_rate=sample_rate,
+        crossfade_ms=10.0,
+    )
+    assert rendered.shape == expected.shape
+    assert np.allclose(rendered, expected, atol=1e-3)
 
 
 def test_audio_renderer_clips_overlapping_segments(
     tmp_path: object, monkeypatch: object
 ) -> None:
     monkeypatch.setenv("TEXTAUDIO_PROJECTS_DIR", str(tmp_path / "projects"))
+    monkeypatch.setenv("TEXTAUDIO_CROSSFADE_MS", "10")
 
     project = Project(metadata={})
     audio_path = project_original_wav_path(project.id)
@@ -276,8 +287,13 @@ def test_audio_renderer_clips_overlapping_segments(
 
     rendered, rendered_rate = render(project.id)
     assert rendered_rate == sample_rate
-    assert rendered.shape == (sample_rate,)
-    assert np.allclose(rendered, original, atol=1e-3)
+    expected = _crossfade_concatenate(
+        [original[: int(sample_rate * 0.6)], original[int(sample_rate * 0.6) :]],
+        sample_rate=sample_rate,
+        crossfade_ms=10.0,
+    )
+    assert rendered.shape == expected.shape
+    assert np.allclose(rendered, expected, atol=1e-3)
 
 
 def test_crossfade_overlaps_audio() -> None:
@@ -292,3 +308,23 @@ def test_crossfade_overlaps_audio() -> None:
     overlap = out[90:100]
     assert overlap.max() <= 1.0
     assert overlap.min() >= 0.0
+
+
+def test_audio_renderer_handles_empty_segment_list(
+    tmp_path: object, monkeypatch: object
+) -> None:
+    monkeypatch.setenv("TEXTAUDIO_PROJECTS_DIR", str(tmp_path / "projects"))
+
+    project = Project(metadata={"segments": []})
+    audio_path = project_original_wav_path(project.id)
+    project.audio_path = str(audio_path)
+
+    sample_rate = 16_000
+    original = np.linspace(0.0, 1.0, sample_rate, dtype=np.float32)
+    sf.write(audio_path, original, sample_rate, subtype="PCM_16")
+    save_project_metadata(project)
+
+    rendered, rendered_rate = render(project.id)
+    assert rendered_rate == sample_rate
+    assert rendered.shape == original.shape
+    assert np.allclose(rendered, original, atol=1e-3)

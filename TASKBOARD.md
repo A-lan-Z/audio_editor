@@ -1723,30 +1723,30 @@ Button to preview edited audio before exporting.
 ---
 
 #### T511: Write Tests for Segment Operations
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Medium
 - **Dependencies:** T501-T507
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** Testing standards
 
 **Description:**
 Test audio segment management and rendering.
 
 **Acceptance Criteria:**
-- [ ] tests/backend/test_audio_segments.py created
-- [ ] Test: mark segment as removed
-- [ ] Test: concatenate 3 segments
-- [ ] Test: cross-fade between segments
-- [ ] Test: render with mixed kept/removed segments
-- [ ] Test: handle empty segment list
-- [ ] All tests passing
+- [x] tests/backend/test_audio_segments.py created
+- [x] Test: mark segment as removed
+- [x] Test: concatenate 3 segments
+- [x] Test: cross-fade between segments
+- [x] Test: render with mixed kept/removed segments
+- [x] Test: handle empty segment list
+- [x] All tests passing
 
 **Notes:**
 - Use synthetic audio for testing
 - Verify output audio properties (duration, sample rate)
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
