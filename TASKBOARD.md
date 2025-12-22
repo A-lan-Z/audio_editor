@@ -1257,11 +1257,11 @@ Ensure segment generation/initialization can use refined boundaries (and optiona
 ---
 
 #### T356: Add Alignment/Boundary Diagnostics Endpoint(s)
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** Medium
 - **Dependencies:** T351, T353
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** NFR-10
 
 **Description:**
@@ -1271,6 +1271,8 @@ Expose debugging information for refined timestamp mapping so users can validate
 - [ ] Endpoint returns per-token refined start/end, plus boundary adjustment info
 - [ ] Endpoint includes enough info to debug deletions that still sound present
 - [ ] Sensitive data handling: do not log transcripts/audio contents
+
+**Completed:** 2025-12-22
 
 ---
 
