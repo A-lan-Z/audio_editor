@@ -66,6 +66,14 @@ function tokensToWords(tokens: TranscriptToken[]): WordNode[] {
   let lastWord: WordNode | null = null
   for (const token of tokens) {
     if (token.type === 'word') {
+      const kind: WordNode['kind'] =
+        token.status === 'deleted'
+          ? 'deleted'
+          : token.status === 'replaced'
+            ? 'replaced'
+            : token.status === 'inserted' || token.status === 'generated'
+              ? 'inserted'
+              : 'original'
       lastWord = {
         id: token.id,
         tokenIds: [token.id],
@@ -73,7 +81,7 @@ function tokensToWords(tokens: TranscriptToken[]): WordNode[] {
         punctuationTokens: [],
         start: token.start,
         end: token.end,
-        kind: 'original',
+        kind,
         origin: null,
       }
       words.push(lastWord)
@@ -801,6 +809,22 @@ export function TranscriptEditor({
                         {token.text}
                       </span>
                     ))}
+                    {word.kind === 'inserted' && (
+                      <span
+                        style={{
+                          marginLeft: 6,
+                          padding: '2px 6px',
+                          borderRadius: 999,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#0d47a1',
+                          background: 'rgba(25,118,210,0.12)',
+                          border: '1px solid rgba(25,118,210,0.28)',
+                        }}
+                      >
+                        GEN
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>

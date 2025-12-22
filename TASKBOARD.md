@@ -1670,28 +1670,28 @@ Endpoint to stream assembled audio for preview.
 ---
 
 #### T509: Frontend - Show Deletion Effects in Real-Time
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Medium
 - **Dependencies:** T410, T503
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-14
 
 **Description:**
 Update UI to show deleted text visually.
 
 **Acceptance Criteria:**
-- [ ] Deleted tokens shown with strikethrough
-- [ ] Deleted tokens grayed out
-- [ ] Deletion reflected immediately after edit
-- [ ] Can toggle visibility of deleted text (optional)
-- [ ] Test deletion visual feedback
+- [x] Deleted tokens shown with strikethrough
+- [x] Deleted tokens grayed out
+- [x] Deletion reflected immediately after edit
+- [x] Can toggle visibility of deleted text (optional)
+- [x] Test deletion visual feedback
 
 **Notes:**
 - Use CSS for styling (.token-deleted class)
 - Maintain deleted tokens in DOM for undo
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

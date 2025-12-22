@@ -183,6 +183,7 @@ export type TranscriptToken = {
   start: number
   end: number
   type: 'word' | 'punctuation' | 'pause'
+  status: 'original' | 'deleted' | 'replaced' | 'inserted' | 'generated'
 }
 
 export type Transcript = {
