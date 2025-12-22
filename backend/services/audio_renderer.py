@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import UUID
@@ -18,6 +19,61 @@ class AudioRenderError(Exception):
 
     def __str__(self) -> str:
         return self.message
+
+
+DEFAULT_CROSSFADE_MS = 20.0
+MIN_CROSSFADE_MS = 10.0
+MAX_CROSSFADE_MS = 50.0
+
+
+def _crossfade_ms() -> float:
+    raw = os.environ.get("TEXTAUDIO_CROSSFADE_MS")
+    if raw is None:
+        return DEFAULT_CROSSFADE_MS
+    try:
+        value = float(raw)
+    except ValueError:
+        return DEFAULT_CROSSFADE_MS
+    return float(min(MAX_CROSSFADE_MS, max(MIN_CROSSFADE_MS, value)))
+
+
+def _cosine_fade(length: int) -> np.ndarray:
+    if length <= 0:
+        return np.zeros((0,), dtype=np.float32)
+    t = np.linspace(0.0, 1.0, length, endpoint=True, dtype=np.float32)
+    return 0.5 - 0.5 * np.cos(np.pi * t)
+
+
+def _crossfade_concatenate(
+    chunks: list[np.ndarray], *, sample_rate: int, crossfade_ms: float
+) -> np.ndarray:
+    if not chunks:
+        return np.zeros((0,), dtype=np.float32)
+    if len(chunks) == 1:
+        return np.asarray(chunks[0], dtype=np.float32)
+
+    fade_samples = int(round(float(sample_rate) * float(crossfade_ms) / 1000.0))
+    if fade_samples <= 0:
+        return np.concatenate(chunks)
+
+    out = np.asarray(chunks[0], dtype=np.float32)
+    fade_in = _cosine_fade(fade_samples)
+    fade_out = 1.0 - fade_in
+
+    for next_chunk in chunks[1:]:
+        b = np.asarray(next_chunk, dtype=np.float32)
+        if out.size < fade_samples or b.size < fade_samples:
+            out = np.concatenate([out, b])
+            continue
+
+        a_head = out[:-fade_samples]
+        a_tail = out[-fade_samples:]
+        b_head = b[:fade_samples]
+        b_tail = b[fade_samples:]
+        overlapped = a_tail * fade_out + b_head * fade_in
+        out = np.concatenate([a_head, overlapped, b_tail])
+
+    return out
 
 
 def _read_mono_audio(path: Path) -> tuple[np.ndarray, int]:
@@ -121,4 +177,9 @@ def render(project_id: UUID) -> tuple[np.ndarray, int]:
     if not chunks:
         return np.zeros((0,), dtype=np.float32), sample_rate
 
-    return np.concatenate(chunks), sample_rate
+    return (
+        _crossfade_concatenate(
+            chunks, sample_rate=sample_rate, crossfade_ms=_crossfade_ms()
+        ),
+        sample_rate,
+    )

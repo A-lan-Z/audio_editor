@@ -1616,29 +1616,29 @@ Concatenate audio segments seamlessly.
 ---
 
 #### T507: Add Cross-Fade at Segment Boundaries
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Medium
 - **Dependencies:** T506
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-16
 
 **Description:**
 Apply short cross-fade to avoid clicks at boundaries.
 
 **Acceptance Criteria:**
-- [ ] Cross-fade duration: 10-50ms (configurable)
-- [ ] Linear or cosine fade applied at each boundary
-- [ ] Fade-out last 10ms of segment A, fade-in first 10ms of segment B, overlap
-- [ ] No audible clicks or pops
-- [ ] Test with various segment combinations
-- [ ] Optional: skip cross-fade for natural boundaries (e.g., pauses)
+- [x] Cross-fade duration: 10-50ms (configurable)
+- [x] Linear or cosine fade applied at each boundary
+- [x] Fade-out last 10ms of segment A, fade-in first 10ms of segment B, overlap
+- [x] No audible clicks or pops
+- [x] Test with various segment combinations
+- [x] Optional: skip cross-fade for natural boundaries (e.g., pauses)
 
 **Notes:**
 - Use librosa or manual array multiplication for fades
 - Preserve overall volume level
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

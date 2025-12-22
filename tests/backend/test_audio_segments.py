@@ -8,7 +8,7 @@ import soundfile as sf
 from backend.models.edit_operation import EditOperation
 from backend.models.project import Project
 from backend.models.transcript import Token, Transcript
-from backend.services.audio_renderer import render
+from backend.services.audio_renderer import _crossfade_concatenate, render
 from backend.services.audio_segment_manager import AudioSegmentManager
 from backend.services.deletion_handler import handle_deletion
 from backend.utils.storage import (
@@ -278,3 +278,17 @@ def test_audio_renderer_clips_overlapping_segments(
     assert rendered_rate == sample_rate
     assert rendered.shape == (sample_rate,)
     assert np.allclose(rendered, original, atol=1e-3)
+
+
+def test_crossfade_overlaps_audio() -> None:
+    sample_rate = 1_000
+    a = np.ones((100,), dtype=np.float32)
+    b = np.zeros((100,), dtype=np.float32)
+
+    out = _crossfade_concatenate([a, b], sample_rate=sample_rate, crossfade_ms=10.0)
+    assert out.shape == (190,)
+    assert out[0] == 1.0
+    assert out[-1] == 0.0
+    overlap = out[90:100]
+    assert overlap.max() <= 1.0
+    assert overlap.min() >= 0.0
