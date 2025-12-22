@@ -11,11 +11,13 @@ AlignmentBackend = Literal["none", "mfa"]
 TRANSCRIPT_ACTIVE_FILENAME = "transcript.json"
 TRANSCRIPT_ASR_FILENAME = "transcript_asr.json"
 TRANSCRIPT_REFINED_FILENAME = "transcript_refined.json"
+TRANSCRIPT_ORIGINAL_FILENAME = "transcript_original.json"
 
 METADATA_TRANSCRIPT_PATH = "transcript_path"
 METADATA_TRANSCRIPT_ASR_PATH = "transcript_asr_path"
 METADATA_TRANSCRIPT_REFINED_PATH = "transcript_refined_path"
 METADATA_TRANSCRIPT_ACTIVE_SOURCE = "transcript_active_source"
+METADATA_TRANSCRIPT_ORIGINAL_PATH = "original_transcript_path"
 
 
 def _env_bool(name: str, default: bool) -> bool:

@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict
 
 from backend.api.deps import get_transcription_jobs, get_transcription_service
 from backend.models.transcript import Transcript
+from backend.services.transcription_artifacts import persist_transcription_artifacts
 from backend.services.transcription_jobs import TranscriptionJobManager
 from backend.services.transcription_service import TranscriptionService
 from backend.utils.errors import ProjectNotFound, ValidationError
@@ -16,9 +17,10 @@ from backend.utils.storage import (
     StorageError,
     load_project_metadata,
     project_original_wav_path,
+    resolve_active_transcript_path,
     save_project_metadata,
-    save_transcript,
 )
+from backend.utils.timestamp_refinement_config import TimestampRefinementConfig
 
 router = APIRouter(prefix="/api/projects", tags=["transcription"])
 logger = logging.getLogger("textaudio")
@@ -61,10 +63,16 @@ def transcribe_project(
     if not audio_path.exists():
         raise ValidationError("Audio file not found for project")
 
+    refinement_config = TimestampRefinementConfig.from_env()
+
     def on_completed(transcript: Transcript) -> None:
-        transcript_path = save_transcript(project_id, transcript)
         updated = load_project_metadata(project_id)
-        updated.metadata["transcript_path"] = str(transcript_path)
+        persist_transcription_artifacts(
+            project=updated,
+            audio_path=str(audio_path),
+            transcript_asr=transcript,
+            config=refinement_config,
+        )
         save_project_metadata(updated)
 
     def on_failed(message: str) -> None:
@@ -105,8 +113,8 @@ def get_transcription_status(
             error=task_state.error,
         )
 
-    transcript_path = project.metadata.get("transcript_path")
-    if isinstance(transcript_path, str) and Path(transcript_path).exists():
+    resolved = resolve_active_transcript_path(project)
+    if resolved is not None:
         return TranscriptionStatusResponse(
             task_id=None,
             status="completed",
@@ -123,11 +131,11 @@ def get_transcript(project_id: UUID) -> Transcript:
     except StorageError as exc:
         raise ProjectNotFound(project_id) from exc
 
-    transcript_path = project.metadata.get("transcript_path")
-    if not isinstance(transcript_path, str):
+    resolved = resolve_active_transcript_path(project)
+    if resolved is None:
         raise ValidationError("Transcript not found for project")
     try:
-        raw = Path(transcript_path).read_text(encoding="utf-8")
+        raw = resolved.read_text(encoding="utf-8")
         return Transcript.from_json(raw)
     except OSError as exc:
         raise ValidationError("Transcript not found for project") from exc

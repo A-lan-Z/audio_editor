@@ -10,6 +10,12 @@ from uuid import UUID
 
 from backend.models.project import Project
 from backend.models.transcript import Transcript
+from backend.utils.timestamp_refinement_config import (
+    METADATA_TRANSCRIPT_ACTIVE_SOURCE,
+    METADATA_TRANSCRIPT_ASR_PATH,
+    METADATA_TRANSCRIPT_PATH,
+    METADATA_TRANSCRIPT_REFINED_PATH,
+)
 
 DEFAULT_PROJECTS_ROOT = Path("data/projects")
 
@@ -68,6 +74,21 @@ def project_original_wav_path(project_id: UUID) -> Path:
 def project_transcript_path(project_id: UUID) -> Path:
     project_dir = _ensure_project_dir(project_id)
     return project_dir / "transcript.json"
+
+
+def project_named_transcript_path(project_id: UUID, filename: str) -> Path:
+    project_dir = _ensure_project_dir(project_id)
+    return project_dir / filename
+
+
+def save_transcript_named(project_id: UUID, transcript: Transcript, filename: str) -> Path:
+    transcript_path = project_named_transcript_path(project_id, filename)
+    try:
+        data = transcript.to_json().encode("utf-8")
+    except Exception as exc:  # noqa: BLE001
+        raise StorageError("Failed to serialize transcript JSON") from exc
+    _atomic_write_bytes(transcript_path, data)
+    return transcript_path
 
 
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
@@ -151,3 +172,23 @@ def load_transcript(project_id: UUID) -> Transcript:
         raise StorageError("Transcript not found for project") from exc
     except Exception as exc:  # noqa: BLE001
         raise StorageError("Transcript JSON is invalid") from exc
+
+
+def resolve_active_transcript_path(project: Project) -> Path | None:
+    raw_path = project.metadata.get(METADATA_TRANSCRIPT_PATH)
+    if isinstance(raw_path, str):
+        path = Path(raw_path)
+        if path.exists():
+            return path
+
+    active_source = project.metadata.get(METADATA_TRANSCRIPT_ACTIVE_SOURCE)
+    if active_source == "refined":
+        raw_refined = project.metadata.get(METADATA_TRANSCRIPT_REFINED_PATH)
+        if isinstance(raw_refined, str) and Path(raw_refined).exists():
+            return Path(raw_refined)
+
+    raw_asr = project.metadata.get(METADATA_TRANSCRIPT_ASR_PATH)
+    if isinstance(raw_asr, str) and Path(raw_asr).exists():
+        return Path(raw_asr)
+
+    return None

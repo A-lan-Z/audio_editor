@@ -1217,11 +1217,11 @@ Improve edit boundary correctness by snapping cut points to nearby silence/low-e
 ---
 
 #### T354: Persist Original/ASR/Refined Transcript Artifacts
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** Medium
 - **Dependencies:** T351
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-2, FR-7
 
 **Description:**
@@ -1231,6 +1231,8 @@ Persist multiple transcript artifacts to support reproducibility and debugging (
 - [ ] Project metadata stores paths to transcript artifacts (original/asr/refined)
 - [ ] Refinement never overwrites the original transcript snapshot
 - [ ] Loading a project can reconstruct the chosen “active” transcript deterministically
+
+**Completed:** 2025-12-22
 
 ---
 
