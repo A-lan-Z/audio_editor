@@ -1536,28 +1536,28 @@ Map deleted tokens to audio segments and mark as removed.
 ---
 
 #### T504: Update Project Metadata for Removed Segments
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Low
 - **Dependencies:** T503
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-14
 
 **Description:**
 Persist segment removal state in project data.
 
 **Acceptance Criteria:**
-- [ ] Project metadata includes: segments[] with status
-- [ ] Metadata updated when segments marked removed
-- [ ] Metadata saved to disk after changes
-- [ ] Can load project and restore segment states
-- [ ] Test save/load roundtrip
+- [x] Project metadata includes: segments[] with status
+- [x] Metadata updated when segments marked removed
+- [x] Metadata saved to disk after changes
+- [x] Can load project and restore segment states
+- [x] Test save/load roundtrip
 
 **Notes:**
 - Store in projects/{id}/metadata.json
 - Include edit operation history
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 
