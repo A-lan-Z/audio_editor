@@ -1172,11 +1172,11 @@ Add an optional, pluggable “top-tier online STT provider” adapter that can b
 ---
 
 #### T352: Implement Forced-Alignment Refinement Step
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** High
 - **Dependencies:** T351
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-7, FR-11
 
 **Description:**
@@ -1190,6 +1190,8 @@ Implement a forced-alignment step that refines word start/end times given the tr
 
 **Notes:**
 - This can be local (preferred for local-first) even if the base STT is cloud-based.
+
+**Completed:** 2025-12-22
 
 ---
 
