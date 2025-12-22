@@ -187,3 +187,94 @@ def test_audio_renderer_renders_kept_segments(
     assert rendered_rate == sample_rate
     assert rendered.shape == (sample_rate // 2,)
     assert np.allclose(rendered, original[: sample_rate // 2], atol=1e-3)
+
+
+def test_audio_renderer_concatenates_three_segments(
+    tmp_path: object, monkeypatch: object
+) -> None:
+    monkeypatch.setenv("TEXTAUDIO_PROJECTS_DIR", str(tmp_path / "projects"))
+
+    project = Project(metadata={})
+    audio_path = project_original_wav_path(project.id)
+    project.audio_path = str(audio_path)
+
+    sample_rate = 16_000
+    original = np.linspace(0.0, 1.0, sample_rate, dtype=np.float32)
+    sf.write(audio_path, original, sample_rate, subtype="PCM_16")
+
+    project.metadata["segments"] = [
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.0,
+            "end": 0.25,
+            "status": "kept",
+            "token_ids": [],
+        },
+        {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.25,
+            "end": 0.5,
+            "status": "kept",
+            "token_ids": [],
+        },
+        {
+            "id": "33333333-3333-3333-3333-333333333333",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.5,
+            "end": 0.75,
+            "status": "kept",
+            "token_ids": [],
+        },
+    ]
+    save_project_metadata(project)
+
+    rendered, rendered_rate = render(project.id)
+    assert rendered_rate == sample_rate
+    assert rendered.shape == (int(sample_rate * 0.75),)
+    assert np.allclose(rendered, original[: int(sample_rate * 0.75)], atol=1e-3)
+
+
+def test_audio_renderer_clips_overlapping_segments(
+    tmp_path: object, monkeypatch: object
+) -> None:
+    monkeypatch.setenv("TEXTAUDIO_PROJECTS_DIR", str(tmp_path / "projects"))
+
+    project = Project(metadata={})
+    audio_path = project_original_wav_path(project.id)
+    project.audio_path = str(audio_path)
+
+    sample_rate = 16_000
+    original = np.linspace(0.0, 1.0, sample_rate, dtype=np.float32)
+    sf.write(audio_path, original, sample_rate, subtype="PCM_16")
+
+    project.metadata["segments"] = [
+        {
+            "id": "11111111-1111-1111-1111-111111111111",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.0,
+            "end": 0.6,
+            "status": "kept",
+            "token_ids": [],
+        },
+        {
+            "id": "22222222-2222-2222-2222-222222222222",
+            "source": "original",
+            "file_path": str(audio_path),
+            "start": 0.4,
+            "end": 1.0,
+            "status": "kept",
+            "token_ids": [],
+        },
+    ]
+    save_project_metadata(project)
+
+    rendered, rendered_rate = render(project.id)
+    assert rendered_rate == sample_rate
+    assert rendered.shape == (sample_rate,)
+    assert np.allclose(rendered, original, atol=1e-3)

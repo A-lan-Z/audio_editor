@@ -100,10 +100,21 @@ def render(project_id: UUID) -> tuple[np.ndarray, int]:
     kept.sort(key=lambda seg: (seg.start, seg.end, str(seg.id)))
 
     chunks: list[np.ndarray] = []
+    last_original_end = 0.0
     for segment in kept:
-        chunk = _load_segment_audio(
-            segment=segment, original_audio=original_audio, sample_rate=sample_rate
-        )
+        if segment.source == "original":
+            start = max(float(segment.start), float(last_original_end))
+            end = max(float(segment.end), start)
+            last_original_end = max(last_original_end, end)
+            chunk = _slice_segment(
+                audio=original_audio, sample_rate=sample_rate, start=start, end=end
+            )
+        else:
+            chunk = _load_segment_audio(
+                segment=segment,
+                original_audio=original_audio,
+                sample_rate=sample_rate,
+            )
         if chunk.size:
             chunks.append(chunk)
 
