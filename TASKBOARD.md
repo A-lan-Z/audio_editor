@@ -1483,28 +1483,28 @@ Service to manage audio segments and their states.
 ---
 
 #### T502: Implement Segment Marking
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 5
 - **Complexity:** Low
 - **Dependencies:** T501
-- **Agent:** (unassigned)
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-14
 
 **Description:**
 Mark segments as kept/removed/generated.
 
 **Acceptance Criteria:**
-- [ ] Segment status enum: kept, removed, generated
-- [ ] Function: mark_segment_removed(segment_id)
-- [ ] Function: mark_segment_kept(segment_id)
-- [ ] Status changes tracked in segment metadata
-- [ ] Test status changes and retrieval
+- [x] Segment status enum: kept, removed, generated
+- [x] Function: mark_segment_removed(segment_id)
+- [x] Function: mark_segment_kept(segment_id)
+- [x] Status changes tracked in segment metadata
+- [x] Test status changes and retrieval
 
 **Notes:**
 - Don't delete original audio, just mark status
 - Allows undo operation
 
-**Completed:** (date)
+**Completed:** 2025-12-22
 
 ---
 

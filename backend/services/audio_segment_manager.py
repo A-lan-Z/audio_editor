@@ -144,6 +144,12 @@ class AudioSegmentManager:
             return
         raise KeyError(f"Segment not found: {segment_id}")
 
+    def mark_segment_removed(self, segment_id: UUID) -> None:
+        self.mark_removed(segment_id)
+
+    def mark_segment_kept(self, segment_id: UUID) -> None:
+        self.mark_kept(segment_id)
+
     def add_generated_segment(
         self,
         *,
