@@ -10,7 +10,13 @@ import soundfile as sf
 
 from backend.models.project import Project
 from backend.services.audio_segment_manager import AudioSegment, AudioSegmentManager
+from backend.services.boundary_snapping import (
+    frame_rms,
+    snap_boundary_backward,
+    snap_boundary_forward,
+)
 from backend.utils.storage import StorageError, load_project_metadata
+from backend.utils.timestamp_refinement_config import TimestampRefinementConfig
 
 
 @dataclass(frozen=True, slots=True)
@@ -147,32 +153,121 @@ def render(project_id: UUID) -> tuple[np.ndarray, int]:
         raise AudioRenderError("Audio file not found for project")
 
     original_audio, sample_rate = _read_mono_audio(audio_path)
+    refine_cfg = TimestampRefinementConfig.from_env()
+    enable_boundary_trimming = bool(refine_cfg.enabled)
+    snap_window_ms = int(refine_cfg.snap_window_ms)
+    cut_padding_s = float(refine_cfg.cut_padding_ms) / 1000.0
+    frame_samples = max(1, int(round(float(sample_rate) * 0.01)))
+    rms = frame_rms(original_audio, frame_samples=frame_samples)
     manager = AudioSegmentManager.from_project(project)
     segments = manager.get_all_segments()
     if not segments:
         segments = [_default_segment(project, original_audio, sample_rate)]
 
-    kept = [seg for seg in segments if seg.status in {"kept", "generated"}]
-    kept.sort(key=lambda seg: (seg.start, seg.end, str(seg.id)))
-
+    segments.sort(key=lambda seg: (seg.start, seg.end, str(seg.id)))
     chunks: list[np.ndarray] = []
-    last_original_end = 0.0
-    for segment in kept:
-        if segment.source == "original":
-            start = max(float(segment.start), float(last_original_end))
-            end = max(float(segment.end), start)
-            last_original_end = max(last_original_end, end)
-            chunk = _slice_segment(
-                audio=original_audio, sample_rate=sample_rate, start=start, end=end
-            )
-        else:
-            chunk = _load_segment_audio(
-                segment=segment,
-                original_audio=original_audio,
+    cursor = 0.0
+    previous_included_original = False
+    removed_since_last_original = False
+    last_original_slice_start: float | None = None
+    last_original_slice_end: float | None = None
+    for segment in segments:
+        start = float(segment.start)
+        end = float(segment.end)
+        include_segment = segment.status in {"kept", "generated"}
+        include_gap = (
+            start > cursor
+            and previous_included_original
+            and include_segment
+            and segment.source == "original"
+        )
+
+        if segment.source == "original" and segment.status == "removed":
+            removed_since_last_original = True
+
+        if include_gap:
+            gap = _slice_segment(
+                audio=original_audio,
                 sample_rate=sample_rate,
+                start=cursor,
+                end=start,
             )
-        if chunk.size:
-            chunks.append(chunk)
+            if gap.size:
+                chunks.append(gap)
+
+        if include_segment:
+            if segment.source == "original":
+                adjusted_start = start
+                adjusted_end = end
+                if (
+                    enable_boundary_trimming
+                    and removed_since_last_original
+                    and previous_included_original
+                ):
+                    if (
+                        chunks
+                        and last_original_slice_start is not None
+                        and last_original_slice_end is not None
+                    ):
+                        snapped_end = snap_boundary_backward(
+                            rms,
+                            sample_rate=sample_rate,
+                            frame_samples=frame_samples,
+                            center_time=last_original_slice_end,
+                            window_ms=snap_window_ms,
+                        )
+                        trimmed_end = max(
+                            float(last_original_slice_start),
+                            float(snapped_end) - cut_padding_s,
+                        )
+                        chunks[-1] = _slice_segment(
+                            audio=original_audio,
+                            sample_rate=sample_rate,
+                            start=float(last_original_slice_start),
+                            end=float(trimmed_end),
+                        )
+                        last_original_slice_end = float(trimmed_end)
+
+                    snapped_start = snap_boundary_forward(
+                        rms,
+                        sample_rate=sample_rate,
+                        frame_samples=frame_samples,
+                        center_time=start,
+                        window_ms=snap_window_ms,
+                    )
+                    adjusted_start = max(
+                        float(snapped_start) + cut_padding_s,
+                        float(cursor),
+                    )
+
+                removed_since_last_original = False
+                clipped_start = max(start, cursor)
+                clipped_start = max(adjusted_start, clipped_start)
+                clipped_end = max(adjusted_end, clipped_start)
+                chunk = _slice_segment(
+                    audio=original_audio,
+                    sample_rate=sample_rate,
+                    start=clipped_start,
+                    end=clipped_end,
+                )
+                last_original_slice_start = clipped_start
+                last_original_slice_end = clipped_end
+            else:
+                chunk = _load_segment_audio(
+                    segment=segment,
+                    original_audio=original_audio,
+                    sample_rate=sample_rate,
+                )
+            if chunk.size:
+                chunks.append(chunk)
+            previous_included_original = segment.source == "original"
+        else:
+            if segment.source != "original":
+                previous_included_original = False
+                last_original_slice_start = None
+                last_original_slice_end = None
+
+        cursor = max(cursor, end)
 
     if not chunks:
         return np.zeros((0,), dtype=np.float32), sample_rate

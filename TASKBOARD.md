@@ -1196,11 +1196,11 @@ Implement a forced-alignment step that refines word start/end times given the tr
 ---
 
 #### T353: Implement Boundary Snapping + Cut Padding Rules
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** High
 - **Dependencies:** T352
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-14, FR-15, FR-16
 
 **Description:**
@@ -1211,6 +1211,8 @@ Improve edit boundary correctness by snapping cut points to nearby silence/low-e
 - [ ] Padding rules configurable (e.g., ±20–80ms) and applied consistently
 - [ ] Regression: deleting a sentence does not leave large audible remnants
 - [ ] Keeps natural pauses between kept words where appropriate
+
+**Completed:** 2025-12-22
 
 ---
 
