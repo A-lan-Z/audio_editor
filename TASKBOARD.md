@@ -1147,11 +1147,11 @@ Define a refinement stage that takes the raw ASR transcript (text + rough word t
 ---
 
 #### T359: Optional: Add Top-Tier Online STT Provider Adapter (Pluggable)
-- **Status:** Not Started
+- **Status:** Done
 - **Phase:** 3.5
 - **Complexity:** High
 - **Dependencies:** T351
-- **Agent:**
+- **Agent:** GPT-5.2 (Codex CLI)
 - **Requirements:** FR-6, FR-7, NFR-4
 
 **Description:**
@@ -1166,6 +1166,8 @@ Add an optional, pluggable “top-tier online STT provider” adapter that can b
 
 **Notes:**
 - This task is optional and should not block local-first usage.
+
+**Completed:** 2025-12-22
 
 ---
 
