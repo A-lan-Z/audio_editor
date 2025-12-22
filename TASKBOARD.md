@@ -38,6 +38,7 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 1: Backend Core | 9 | 0 | 0 | 0 | 0 | 9 |
 | 2: Audio Input | 8 | 0 | 0 | 0 | 0 | 8 |
 | 3: Transcription | 13 | 0 | 0 | 0 | 0 | 13 |
+| 3.5: Timestamp Refinement | 10 | 10 | 0 | 0 | 0 | 0 |
 | 4: Text Editor | 12 | 0 | 0 | 0 | 0 | 12 |
 | 5: Audio Deletion | 11 | 0 | 0 | 0 | 0 | 11 |
 | 6: Voice/TTS | 17 | 17 | 0 | 0 | 0 | 0 |
@@ -45,11 +46,11 @@ This document tracks all tasks for the TextAudio Edit MVP implementation. AI age
 | 8: Playback | 11 | 11 | 0 | 0 | 0 | 0 |
 | 9: Export | 13 | 13 | 0 | 0 | 0 | 0 |
 | 10: Polish | 15 | 15 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **127** | **66** | **0** | **0** | **0** | **61** |
+| **TOTAL** | **137** | **76** | **0** | **0** | **0** | **61** |
 
 **Last Updated:** 2025-12-22
-**Current Phase:** 6 (Not Started)
-**Next Task:** T601
+**Current Phase:** 3.5 (Not Started)
+**Next Task:** T351
 
 ---
 
@@ -1116,6 +1117,208 @@ Profile transcription and optimize to meet performance targets.
 - Document hardware requirements
 
 **Completed:** 2025-12-21
+
+---
+
+### Phase 3.5: Timestamp Refinement & Boundary Snapping
+
+#### T351: Define Refined Timestamp Pipeline and Config
+- **Status:** Done
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T313
+- **Agent:** GPT-5.2 (Codex CLI)
+- **Requirements:** FR-7, FR-11
+
+**Description:**
+Define a refinement stage that takes the raw ASR transcript (text + rough word timings) and produces a refined transcript suitable for transcript-driven audio editing (delete/replace), with a clear configuration surface.
+
+**Acceptance Criteria:**
+- [ ] Document the refinement pipeline (inputs/outputs) in `docs/`
+- [ ] Define config knobs (enable/disable refinement, padding ms, silence threshold mode)
+- [ ] Define artifact naming and metadata pointers (e.g., original/asr/refined transcript paths)
+- [ ] Define how refined timestamps interact with later phases (token mapping, segments, playback)
+
+**Notes:**
+- This phase is intended to reduce “deleted content still audible” failures and make cuts sound natural.
+
+**Completed:** 2025-12-22
+
+---
+
+#### T359: Optional: Add Top-Tier Online STT Provider Adapter (Pluggable)
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** High
+- **Dependencies:** T351
+- **Agent:**
+- **Requirements:** FR-6, FR-7, NFR-4
+
+**Description:**
+Add an optional, pluggable “top-tier online STT provider” adapter that can be enabled explicitly (local-first default remains the existing local ASR). Normalize the provider output into the existing Transcript/Token schema with word-level timestamps so downstream editing logic is unchanged.
+
+**Acceptance Criteria:**
+- [ ] Provider adapter interface implemented (keep local ASR as default)
+- [ ] Provider configuration is opt-in (API key and provider choice via local env/config; never committed)
+- [ ] Provider output normalized into existing Token fields (text/start/end/type/status) deterministically
+- [ ] Clear error messages when provider config is missing/invalid
+- [ ] Documentation covers privacy implications and how to enable/disable
+
+**Notes:**
+- This task is optional and should not block local-first usage.
+
+---
+
+#### T352: Implement Forced-Alignment Refinement Step
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** High
+- **Dependencies:** T351
+- **Agent:**
+- **Requirements:** FR-7, FR-11
+
+**Description:**
+Implement a forced-alignment step that refines word start/end times given the transcript text and audio, improving boundary accuracy beyond raw ASR word timestamps.
+
+**Acceptance Criteria:**
+- [ ] Alignment service/interface implemented (pluggable backend)
+- [ ] Produces refined word timestamps for the existing Token model
+- [ ] Handles punctuation tokens deterministically (stable anchoring strategy)
+- [ ] Fails gracefully with actionable errors (missing dependencies, alignment failure)
+
+**Notes:**
+- This can be local (preferred for local-first) even if the base STT is cloud-based.
+
+---
+
+#### T353: Implement Boundary Snapping + Cut Padding Rules
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** High
+- **Dependencies:** T352
+- **Agent:**
+- **Requirements:** FR-14, FR-15, FR-16
+
+**Description:**
+Improve edit boundary correctness by snapping cut points to nearby silence/low-energy regions and applying small padding rules to avoid speech leakage when deleting/replacing words.
+
+**Acceptance Criteria:**
+- [ ] Implements a deterministic algorithm to adjust boundaries (silence/VAD or RMS-based)
+- [ ] Padding rules configurable (e.g., ±20–80ms) and applied consistently
+- [ ] Regression: deleting a sentence does not leave large audible remnants
+- [ ] Keeps natural pauses between kept words where appropriate
+
+---
+
+#### T354: Persist Original/ASR/Refined Transcript Artifacts
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T351
+- **Agent:**
+- **Requirements:** FR-2, FR-7
+
+**Description:**
+Persist multiple transcript artifacts to support reproducibility and debugging (original snapshot, raw ASR output, refined output).
+
+**Acceptance Criteria:**
+- [ ] Project metadata stores paths to transcript artifacts (original/asr/refined)
+- [ ] Refinement never overwrites the original transcript snapshot
+- [ ] Loading a project can reconstruct the chosen “active” transcript deterministically
+
+---
+
+#### T355: Segment Initialization Uses Refined Boundaries (Optional)
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T353, T354
+- **Agent:**
+- **Requirements:** FR-14, FR-15
+
+**Description:**
+Ensure segment generation/initialization can use refined boundaries (and optional explicit pause/silence segments) so playback/export reflect refined timing.
+
+**Acceptance Criteria:**
+- [ ] AudioSegmentManager can initialize segments from refined transcript output
+- [ ] Supports explicit pause/silence segments when available
+- [ ] Does not reintroduce deleted content via gaps/segments
+
+---
+
+#### T356: Add Alignment/Boundary Diagnostics Endpoint(s)
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T351, T353
+- **Agent:**
+- **Requirements:** NFR-10
+
+**Description:**
+Expose debugging information for refined timestamp mapping so users can validate correctness in the UI.
+
+**Acceptance Criteria:**
+- [ ] Endpoint returns per-token refined start/end, plus boundary adjustment info
+- [ ] Endpoint includes enough info to debug deletions that still sound present
+- [ ] Sensitive data handling: do not log transcripts/audio contents
+
+---
+
+#### T357: Frontend Debug UI for Timestamp Mapping
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T356
+- **Agent:**
+- **Requirements:** NFR-9
+
+**Description:**
+Add a small debug panel to the editor UI that can display refined timestamp data and boundary adjustments.
+
+**Acceptance Criteria:**
+- [ ] Displays token start/end (refined) on hover/selection
+- [ ] Shows deletion cut boundaries (before/after snapping) for selected region
+- [ ] Can copy/download diagnostics JSON
+
+---
+
+#### T358: Tests/Benchmarks for Boundary Correctness
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T353, T355
+- **Agent:**
+- **Requirements:** Testing standards
+
+**Description:**
+Add unit/integration tests that detect “deleted content still audible” regressions and measure boundary correctness.
+
+**Acceptance Criteria:**
+- [ ] Test: delete multi-word region removes corresponding audio content reliably
+- [ ] Test: rapid consecutive edits do not drop operations
+- [ ] Test: boundary snapping behaves deterministically on synthetic audio
+
+---
+
+#### T360: Optional: STT/Alignment Benchmark Harness and Evaluation Report
+- **Status:** Not Started
+- **Phase:** 3.5
+- **Complexity:** Medium
+- **Dependencies:** T351, T359, T352
+- **Agent:**
+- **Requirements:** FR-7, NFR-1
+
+**Description:**
+Add a lightweight benchmark harness to compare transcription quality and timestamp stability between the local ASR and the optional online provider (when enabled), and produce a short evaluation report based on a small curated set of local test samples.
+
+**Acceptance Criteria:**
+- [ ] Benchmark script exists under `scripts/` and runs locally on synthetic/sample audio
+- [ ] Captures at least: transcript text diff summary and timestamp stability metrics
+- [ ] Writes a human-readable report to `docs/`
+- [ ] Does not commit real user audio/transcripts; uses synthetic or anonymized samples only
+
+**Notes:**
+- Keep scope small: enough to compare options and catch regressions.
 
 ---
 

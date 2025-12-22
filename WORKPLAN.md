@@ -161,6 +161,35 @@ Before starting Phase 0, ensure:
 
 ---
 
+### Phase 3.5: Timestamp Refinement & Boundary Snapping (Best-Quality Editing)
+**Goal:** Implement the “best approach” for transcript-driven editing accuracy: use a top-tier STT source for high-quality text, then refine timestamps via alignment + boundary snapping so deletions/replacements map to audio reliably and cuts sound natural.
+
+**Tasks:**
+- **T351:** Define refined timestamp pipeline and config
+- **T359:** Optional: add top-tier online STT provider adapter (pluggable)
+- **T352:** Implement forced-alignment refinement step (local aligner) to improve word start/end times
+- **T353:** Implement audio-aware boundary snapping (silence/VAD) and cut padding rules to reduce speech leakage
+- **T354:** Persist multiple transcript artifacts (original/asr/refined) and update project metadata pointers
+- **T355:** Update segment initialization to optionally include explicit pause/silence segments from refinement output
+- **T356:** Add alignment/debug diagnostics endpoint(s) (per-token timings + confidence/energy windows)
+- **T357:** Frontend: add debug UI to visualize refined timings and cut boundaries
+- **T358:** Write tests/benchmarks for boundary correctness (deletion should remove intended content)
+- **T360:** Optional: STT/alignment benchmark harness and evaluation report
+
+**Acceptance Criteria:**
+- Refined timestamps are available as a stable artifact separate from the raw ASR output
+- Deleting a multi-word region reliably removes the intended audio (no large “deleted content still audible” failures)
+- Playback preserves natural pauses (where appropriate) without reintroducing deleted speech
+- Debug endpoints/UI allow inspecting the mapping: token ↔ refined start/end ↔ energy/silence near boundaries
+- Tests cover: deletion of a sentence, rapid consecutive edits, and boundary snapping edge cases
+- If an online STT provider is enabled, it is opt-in and normalized into the existing Transcript/Token schema without breaking local-first defaults
+
+**Dependencies:** Phase 3
+**Estimated Complexity:** High
+**Requirements Mapping:** FR-7, FR-11, FR-14, FR-15, FR-16
+
+---
+
 ### Phase 4: Text Editor & Token Mapping
 **Goal:** Build transcript editor with audio-token synchronization
 
@@ -187,7 +216,7 @@ Before starting Phase 0, ensure:
 - Token mapping updates correctly after insertions/deletions
 - Tests cover edge cases (delete all, insert at start/end, etc.)
 
-**Dependencies:** Phase 3
+**Dependencies:** Phase 3.5
 **Estimated Complexity:** High
 **Requirements Mapping:** FR-10, FR-11, FR-13
 

@@ -114,10 +114,12 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 
 **FR-6**: For each uploaded audio:
 - The backend shall perform automatic speech recognition (ASR) to produce a transcript.
+- The system may support an optional online STT provider, but local processing should remain the default.
 
 **FR-7**: The transcript shall have **word-level or token-level timestamps**:
 - `start_time` and `end_time` for each token or word.
 - Sufficient resolution to allow reasonably precise audio alignment.
+- The system should support an optional **timestamp refinement** step (e.g., forced alignment and/or silence-aware boundary snapping) to improve edit boundary correctness.
 
 **FR-8**: The ASR should support at least English for MVP.
 
@@ -155,6 +157,7 @@ The app is intended to run **locally on a single machine** (e.g., your laptop) w
 
 **FR-15**: For playback:
 - The app shall skip removed segments, playing only the “kept” portions in sequence.
+- Playback assembly should preserve natural pauses where feasible, and should avoid reintroducing deleted speech via inaccurate cut boundaries (may require refinement/padding/crossfades).
 
 **FR-16**: For export:
 - The backend shall render the final audio by concatenating:
